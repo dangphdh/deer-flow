@@ -24,3 +24,7 @@ conf.yaml
 # coverage report
 coverage.xml
 coverage/
+node_modules/
+output.log
+package-lock.json
+package.json
