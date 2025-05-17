@@ -15,4 +15,5 @@ __all__ = [
     "get_web_search_tool",
     "get_retriever_tool",
     "VolcengineTTS",
+    "serper_search",
 ]

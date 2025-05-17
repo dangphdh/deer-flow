@@ -147,16 +147,13 @@ Explore more details in the [`web`](./web/) directory.
 DeerFlow supports multiple search engines that can be configured in your `.env` file using the `SEARCH_API` variable:
 
 - **Tavily** (default): A specialized search API for AI applications
-
   - Requires `TAVILY_API_KEY` in your `.env` file
   - Sign up at: https://app.tavily.com/home
 
 - **DuckDuckGo**: Privacy-focused search engine
-
   - No API key required
 
 - **Brave Search**: Privacy-focused search engine with advanced features
-
   - Requires `BRAVE_SEARCH_API_KEY` in your `.env` file
   - Sign up at: https://brave.com/search/api/
 
