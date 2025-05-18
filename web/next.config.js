@@ -35,6 +35,9 @@ const config = {
     return config;
   },
 
+  // Add allowedDevOrigins to avoid cross-origin dev warning
+  allowedDevOrigins: ['deepresearch-beta.overbloom.vn'],
+
   // ... rest of the configuration.
   output: "standalone",
 };

@@ -28,3 +28,5 @@ node_modules/
 output.log
 package-lock.json
 package.json
+*.mp3
+nohup.out
