@@ -6,8 +6,8 @@
   "scripts": {
     "build": "next build",
     "check": "next lint && tsc --noEmit",
-    "dev": "next dev --turbo",
-    "scan": "next dev & npx react-scan@latest localhost:3000",
+    "dev": "PORT=3001 next dev --turbo",
+    "scan": "next dev & npx react-scan@latest localhost:3001",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "next lint",
