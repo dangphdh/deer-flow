@@ -11,6 +11,8 @@ if [ "$1" = "--dev" -o "$1" = "-d" -o "$1" = "dev" -o "$1" = "development" ]; th
   wait
 else
   echo -e "Starting DeerFlow in [PRODUCTION] mode...\n"
-  nohup uv run server.py > output.log 2>&1 &
-  cd web && pnpm start
+  uv run server.py & SERVER_PID=$$!
+  cd web && pnpm start & WEB_PID=$$!
+  trap "kill $$SERVER_PID $$WEB_PID" SIGINT SIGTERM
+  wait
 fi
