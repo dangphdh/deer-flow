@@ -13,6 +13,7 @@ from src.config import SearchEngine, SELECTED_SEARCH_ENGINE
 from src.tools.tavily_search.tavily_search_results_with_images import (
     TavilySearchResultsWithImages,
 )
+from src.tools.serper_search import SerperSearchTool
 
 from src.tools.decorators import create_logged_tool
 
@@ -54,6 +55,8 @@ def get_web_search_tool(max_search_results: int):
                 load_all_available_meta=True,
             ),
         )
+    elif SELECTED_SEARCH_ENGINE == SearchEngine.SERPER.value:
+        return SerperSearchTool(name="web_search", max_results=max_search_results)
     else:
         raise ValueError(f"Unsupported search engine: {SELECTED_SEARCH_ENGINE}")
 
