@@ -36,7 +36,7 @@ const config = {
   },
 
   // Add allowedDevOrigins to avoid cross-origin dev warning
-  allowedDevOrigins: ['deepresearch-beta.overbloom.vn', 'localhost:3000', 'localhost:3001'],
+  allowedDevOrigins: ['deepresearch-beta.overbloom.vn', 'localhost:3000', 'localhost:3001','*'],
 
   // ... rest of the configuration.
   output: "standalone",
