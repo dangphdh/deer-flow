@@ -164,11 +164,16 @@ DeerFlow supports multiple search engines that can be configured in your `.env` 
   - No API key required
   - Specialized for scientific and academic papers
 
+- **Serper.dev**: Google Search API for web search
+  - Requires `SERPER_API_KEY` in your `.env` file
+  - Sign up at: https://serper.dev/
+
 To configure your preferred search engine, set the `SEARCH_API` variable in your `.env` file:
 
 ```bash
-# Choose one: tavily, duckduckgo, brave_search, arxiv
-SEARCH_API=tavily
+# Choose one: tavily, duckduckgo, brave_search, arxiv, serper
+SEARCH_API=serper
+SERPER_API_KEY=your-serper-api-key
 ```
 
 ## Features
