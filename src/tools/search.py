@@ -24,7 +24,7 @@ LoggedTavilySearch = create_logged_tool(TavilySearchResultsWithImages)
 LoggedDuckDuckGoSearch = create_logged_tool(DuckDuckGoSearchResults)
 LoggedBraveSearch = create_logged_tool(BraveSearch)
 LoggedArxivSearch = create_logged_tool(ArxivQueryRun)
-
+LoggedSerperSearch = create_logged_tool(SerperSearchTool)
 
 # Get the selected search tool
 def get_web_search_tool(max_search_results: int):
@@ -56,7 +56,7 @@ def get_web_search_tool(max_search_results: int):
             ),
         )
     elif SELECTED_SEARCH_ENGINE == SearchEngine.SERPER.value:
-        return SerperSearchTool(name="web_search", max_results=max_search_results)
+        return LoggedSerperSearch(name="web_search", max_results=max_search_results)
     else:
         raise ValueError(f"Unsupported search engine: {SELECTED_SEARCH_ENGINE}")
 

@@ -1,5 +1,6 @@
 import os
 import requests
+import httpx
 from typing import Dict, List, Optional
 from langchain.tools.base import BaseTool
 from pydantic import Field
@@ -11,7 +12,7 @@ SERPER_IMAGE_API_URL = "https://google.serper.dev/images"
 SERPER_API_KEY = os.getenv("SERPER_API_KEY", "")
 
 class SerperSearchTool(BaseTool):
-    name: str = "serper_search"
+    name: str = "serper"
     description: str = (
         "Searches the web using Serper.dev (Google Search API). Requires SERPER_API_KEY in environment."
     )
@@ -37,8 +38,22 @@ class SerperSearchTool(BaseTool):
         return normalized
 
     async def _arun(self, query: str) -> List[Dict]:
-        # Async version not implemented
-        raise NotImplementedError("Async not implemented for SerperSearchTool.")
+        headers = {"X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json"}
+        payload = {"q": query, "num": self.max_results}
+        async with httpx.AsyncClient() as client:
+            response = await client.post(SERPER_API_URL, json=payload, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            results = data.get("organic", [])[: self.max_results]
+            normalized = []
+            for result in results:
+                normalized.append({
+                    "type": "page",
+                    "title": result.get("title", ""),
+                    "url": result.get("link", ""),
+                    "content": result.get("snippet", ""),
+                })
+            return normalized
 
 class SerperImageSearchTool(BaseTool):
     name: str = "serper_image_search"
@@ -64,8 +79,21 @@ class SerperImageSearchTool(BaseTool):
         return normalized
 
     async def _arun(self, query: str) -> List[Dict]:
-        # Async version not implemented
-        raise NotImplementedError("Async not implemented for SerperImageSearchTool.")
+        headers = {"X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json"}
+        payload = {"q": query, "num": self.max_results}
+        async with httpx.AsyncClient() as client:
+            response = await client.post(SERPER_IMAGE_API_URL, json=payload, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            images = data.get("images", [])[: self.max_results]
+            normalized = []
+            for img in images:
+                normalized.append({
+                    "type": "image",
+                    "image_url": img.get("imageUrl", ""),
+                    "image_description": img.get("title", ""),
+                })
+            return normalized
 
 
 if __name__ == "__main__":
