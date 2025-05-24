@@ -17,4 +17,4 @@ class SearchEngine(enum.Enum):
 
 
 # Tool configuration
-SELECTED_SEARCH_ENGINE = os.getenv("SEARCH_API", SearchEngine.TAVILY.value)
+SELECTED_SEARCH_ENGINE = os.getenv("SEARCH_API", SearchEngine.SERPER.value)
