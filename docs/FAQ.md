@@ -13,3 +13,7 @@ DeerFlow is short for **D**eep **E**xploration and **E**fficient **R**esearch **
 ## Which models does DeerFlow support?
 
 Please refer to the [Configuration Guide](configuration_guide.md) for more details.
+
+## How to run long run?
+nohup ./bootstrap.sh -d > /dev/null 2>&1 &
+
