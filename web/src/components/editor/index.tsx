@@ -18,18 +18,39 @@ import {
   handleImagePaste,
 } from "novel";
 import type { Content } from "@tiptap/react";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { defaultExtensions } from "./extensions";
-import { ColorSelector } from "./selectors/color-selector";
-import { LinkSelector } from "./selectors/link-selector";
-import { MathSelector } from "./selectors/math-selector";
-import { NodeSelector } from "./selectors/node-selector";
 import { Separator } from "../ui/separator";
 
-import GenerativeMenuSwitch from "./generative/generative-menu-switch";
+// Lazy load heavy editor components that are not immediately needed
+const ColorSelector = dynamic(() => import("./selectors/color-selector").then(mod => ({ default: mod.ColorSelector })), {
+  loading: () => <div className="w-8 h-8 animate-pulse bg-muted rounded" />,
+});
+
+const LinkSelector = dynamic(() => import("./selectors/link-selector").then(mod => ({ default: mod.LinkSelector })), {
+  loading: () => <div className="w-8 h-8 animate-pulse bg-muted rounded" />,
+});
+
+const MathSelector = dynamic(() => import("./selectors/math-selector").then(mod => ({ default: mod.MathSelector })), {
+  loading: () => <div className="w-8 h-8 animate-pulse bg-muted rounded" />,
+});
+
+const NodeSelector = dynamic(() => import("./selectors/node-selector").then(mod => ({ default: mod.NodeSelector })), {
+  loading: () => <div className="w-8 h-8 animate-pulse bg-muted rounded" />,
+});
+
+const GenerativeMenuSwitch = dynamic(() => import("./generative/generative-menu-switch"), {
+  loading: () => <div className="w-8 h-8 animate-pulse bg-muted rounded" />,
+});
+
+const TextButtons = dynamic(() => import("./selectors/text-buttons").then(mod => ({ default: mod.TextButtons })), {
+  loading: () => <div className="w-8 h-8 animate-pulse bg-muted rounded" />,
+});
+
+// Lazy load extensions to reduce initial bundle size
+import { defaultExtensions } from "./extensions";
 import { uploadFn } from "./image-upload";
-import { TextButtons } from "./selectors/text-buttons";
 import { slashCommand, suggestionItems } from "./slash-command";
 // import { defaultEditorContent } from "./content";
 

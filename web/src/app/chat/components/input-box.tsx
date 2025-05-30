@@ -1,7 +1,6 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, X } from "lucide-react";
 import { useCallback, useRef } from "react";
 
@@ -9,6 +8,7 @@ import { Detective } from "~/components/deer-flow/icons/detective";
 import MessageInput, {
   type MessageInputRef,
 } from "~/components/deer-flow/message-input";
+import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { Button } from "~/components/ui/button";
 import type { Option, Resource } from "~/core/messages";
@@ -76,9 +76,9 @@ export function InputBox({
       ref={containerRef}
     >
       <div className="w-full">
-        <AnimatePresence>
+        <OptimizedAnimatePresence>
           {feedback && (
-            <motion.div
+            <MotionDiv
               ref={feedbackRef}
               className="bg-background border-brand absolute top-0 left-0 mt-2 ml-4 flex items-center justify-center gap-1 rounded-2xl border px-2 py-0.5"
               initial={{ opacity: 0, scale: 0 }}
@@ -94,9 +94,9 @@ export function InputBox({
                 size={16}
                 onClick={onRemoveFeedback}
               />
-            </motion.div>
+            </MotionDiv>
           )}
-        </AnimatePresence>
+        </OptimizedAnimatePresence>
         <MessageInput
           className={cn("h-24 px-4 pt-5", feedback && "pt-9")}
           ref={inputRef}
@@ -113,7 +113,7 @@ export function InputBox({
                   Investigation Mode: {backgroundInvestigation ? "On" : "Off"}
                 </h3>
                 <p>
-                  When enabled, DeerFlow will perform a quick search before
+                  When enabled, OverBloom will perform a quick search before
                   planning. This is useful for researches related to ongoing
                   events and news.
                 </p>

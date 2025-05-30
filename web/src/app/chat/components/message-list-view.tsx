@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 import { LoadingOutlined } from "@ant-design/icons";
-import { motion } from "framer-motion";
 import { Download, Headphones } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
+import { MotionLi, MotionDiv } from "~/components/deer-flow/motion";
 import { RainbowText } from "~/components/deer-flow/rainbow-text";
 import { RollingText } from "~/components/deer-flow/rolling-text";
 import {
@@ -189,7 +189,7 @@ function MessageListItem({
       }
       if (content) {
         return (
-          <motion.li
+          <MotionLi
             className="mt-10"
             key={messageId}
             initial={{ opacity: 0, y: 24 }}
@@ -201,7 +201,7 @@ function MessageListItem({
             }}
           >
             {content}
-          </motion.li>
+          </MotionLi>
         );
       }
     }
@@ -364,7 +364,7 @@ function PlanCard({
       </CardContent>
       <CardFooter className="flex justify-end">
         {!message.isStreaming && interruptMessage?.options?.length && (
-          <motion.div
+          <MotionDiv
             className="flex gap-2"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -388,7 +388,7 @@ function PlanCard({
                 {option.text}
               </Button>
             ))}
-          </motion.div>
+          </MotionDiv>
         )}
       </CardFooter>
     </Card>

@@ -1,13 +1,12 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { motion } from "framer-motion";
-
+import { MotionDiv } from "~/components/deer-flow/motion";
 import { cn } from "~/lib/utils";
 
 export function Welcome({ className }: { className?: string }) {
   return (
-    <motion.div
+    <MotionDiv
       className={cn("flex flex-col", className)}
       style={{ transition: "all 0.2s ease-out" }}
       initial={{ opacity: 0, scale: 0.85 }}
@@ -24,11 +23,11 @@ export function Welcome({ className }: { className?: string }) {
           rel="noopener noreferrer"
           className="hover:underline"
         >
-          🦌 DeerFlow
+          🌸 OverBloom
         </a>
         , a deep research assistant built on cutting-edge language models, helps
         you search on web, browse information, and handle complex tasks.
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }

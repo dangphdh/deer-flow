@@ -5,15 +5,15 @@ import { GithubFilled } from "@ant-design/icons";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
+import { OptimizedFlickeringGrid } from "~/components/deer-flow/flickering-grid-lazy";
 import { AuroraText } from "~/components/magicui/aurora-text";
-import { FlickeringGrid } from "~/components/magicui/flickering-grid";
 import { Button } from "~/components/ui/button";
 import { env } from "~/env";
 
 export function Jumbotron() {
   return (
     <section className="flex h-[95vh] w-full flex-col items-center justify-center pb-15">
-      <FlickeringGrid
+      <OptimizedFlickeringGrid
         id="deer-hero-bg"
         className={`absolute inset-0 z-0 [mask-image:radial-gradient(800px_circle_at_center,white,transparent)]`}
         squareSize={4}
@@ -22,7 +22,7 @@ export function Jumbotron() {
         maxOpacity={0.133}
         flickerChance={0.1}
       />
-      <FlickeringGrid
+      <OptimizedFlickeringGrid
         id="deer-hero"
         className="absolute inset-0 z-0 translate-y-[2vh] mask-[url(/images/deer-hero.svg)] mask-size-[100vw] mask-center mask-no-repeat md:mask-size-[72vh]"
         squareSize={3}

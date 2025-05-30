@@ -1,10 +1,10 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { motion } from "framer-motion";
 import { Blocks, PencilRuler, Trash } from "lucide-react";
 import { useCallback, useState } from "react";
 
+import { MotionLi } from "~/components/deer-flow/motion";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { Button } from "~/components/ui/button";
 import { Switch } from "~/components/ui/switch";
@@ -59,11 +59,11 @@ export const MCPTab: Tab = ({ settings, onChange }) => {
     [onChange, settings],
   );
   const animationProps = {
-    initial: { backgroundColor: "gray" },
-    animate: { backgroundColor: "transparent" },
+    initial: { opacity: 0.8, scale: 0.95 },
+    animate: { opacity: 1, scale: 1 },
     transition: { duration: 1 },
     style: {
-      transition: "background-color 1s ease-out",
+      transition: "all 1s ease-out",
     },
   };
   return (
@@ -93,7 +93,7 @@ export const MCPTab: Tab = ({ settings, onChange }) => {
               server.createdAt &&
               server.createdAt > Date.now() - 1000 * 60 * 60 * 1;
             return (
-              <motion.li
+              <MotionLi
                 className={
                   "!bg-card group relative overflow-hidden rounded-lg border pb-2 shadow duration-300"
                 }
@@ -170,7 +170,7 @@ export const MCPTab: Tab = ({ settings, onChange }) => {
                     ))}
                   </ul>
                 </div>
-              </motion.li>
+              </MotionLi>
             );
           })}
         </ul>

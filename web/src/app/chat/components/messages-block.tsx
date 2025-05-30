@@ -1,10 +1,10 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { motion } from "framer-motion";
 import { FastForward, Play } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
+import { MotionDiv } from "~/components/deer-flow/motion";
 import { RainbowText } from "~/components/deer-flow/rainbow-text";
 import { Button } from "~/components/ui/button";
 import {
@@ -117,7 +117,7 @@ export function MessagesBlock({ className }: { className?: string }) {
           >
             <Welcome />
           </div>
-          <motion.div
+          <MotionDiv
             className="mb-4 h-fit w-full items-center justify-center"
             initial={{ opacity: 0, y: "20vh" }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,10 +140,10 @@ export function MessagesBlock({ className }: { className?: string }) {
                     <CardDescription>
                       <RainbowText animated={responding}>
                         {responding
-                          ? "DeerFlow is now replaying the conversation..."
+                          ? "OverBloom is now replaying the conversation..."
                           : replayStarted
                             ? "The replay has been stopped."
-                            : `You're now in DeerFlow's replay mode. Click the "Play" button on the right to start.`}
+                            : `You're now in OverBloom's replay mode. Click the "Play" button on the right to start.`}
                       </RainbowText>
                     </CardDescription>
                   </CardHeader>
@@ -185,7 +185,7 @@ export function MessagesBlock({ className }: { className?: string }) {
                 to clone it locally and run it.
               </div>
             )}
-          </motion.div>
+          </MotionDiv>
         </>
       )}
     </div>

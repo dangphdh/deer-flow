@@ -1,8 +1,7 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { motion } from "framer-motion";
-
+import { MotionLi } from "~/components/deer-flow/motion";
 import { cn } from "~/lib/utils";
 
 import { Welcome } from "./welcome";
@@ -27,7 +26,7 @@ export function ConversationStarter({
       </div>
       <ul className="flex flex-wrap">
         {questions.map((question, index) => (
-          <motion.li
+          <MotionLi
             key={question}
             className="flex w-1/2 shrink-0 p-2 active:scale-105"
             style={{ transition: "all 0.2s ease-out" }}
@@ -48,7 +47,7 @@ export function ConversationStarter({
             >
               {question}
             </div>
-          </motion.li>
+          </MotionLi>
         ))}
       </ul>
     </div>

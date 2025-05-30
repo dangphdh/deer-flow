@@ -1,15 +1,47 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
 import { SiteHeader } from "./chat/components/site-header";
 import { Jumbotron } from "./landing/components/jumbotron";
-import { Ray } from "./landing/components/ray";
-import { CaseStudySection } from "./landing/sections/case-study-section";
-import { CoreFeatureSection } from "./landing/sections/core-features-section";
-import { JoinCommunitySection } from "./landing/sections/join-community-section";
-import { MultiAgentSection } from "./landing/sections/multi-agent-section";
+
+// Static metadata for better SEO and performance
+export const metadata: Metadata = {
+  title: "🌸 OverBloom - AI-Powered Research Platform",
+  description: "Deep Exploration and Efficient Research platform that combines language models with specialized tools for complex research tasks. Multi-agent workflow automation.",
+  keywords: ["AI research", "multi-agent", "workflow automation", "LLM", "research platform"],
+  openGraph: {
+    title: "🌸 OverBloom - AI-Powered Research Platform",
+    description: "Transform your research workflow with AI-powered multi-agent automation",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+// Lazy load below-the-fold components for better initial page load
+const Ray = dynamic(() => import("./landing/components/ray").then(mod => ({ default: mod.Ray })));
+
+const CaseStudySection = dynamic(() => import("./landing/sections/case-study-section").then(mod => ({ default: mod.CaseStudySection })), {
+  loading: () => <div className="h-96 animate-pulse bg-muted/20 rounded-lg" />,
+});
+
+const MultiAgentSection = dynamic(() => import("./landing/sections/multi-agent-section").then(mod => ({ default: mod.MultiAgentSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-muted/20 rounded-lg" />,
+});
+
+const CoreFeatureSection = dynamic(() => import("./landing/sections/core-features-section").then(mod => ({ default: mod.CoreFeatureSection })), {
+  loading: () => <div className="h-96 animate-pulse bg-muted/20 rounded-lg" />,
+});
+
+const JoinCommunitySection = dynamic(() => import("./landing/sections/join-community-section").then(mod => ({ default: mod.JoinCommunitySection })), {
+  loading: () => <div className="h-48 animate-pulse bg-muted/20 rounded-lg" />,
+});
 
 export default function HomePage() {
   return (
@@ -40,7 +72,7 @@ function Footer() {
       </div>
       <div className="text-muted-foreground container mb-8 flex flex-col items-center justify-center text-xs">
         <p>Licensed under MIT License</p>
-        <p>&copy; {year} DeerFlow</p>
+        <p>&copy; {year} OverBloom</p>
       </div>
     </footer>
   );

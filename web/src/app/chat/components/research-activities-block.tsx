@@ -2,21 +2,18 @@
 // SPDX-License-Identifier: MIT
 
 import { PythonOutlined } from "@ant-design/icons";
-import { motion } from "framer-motion";
 import { LRUCache } from "lru-cache";
 import { BookOpenText, FileText, PencilRuler, Search } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useMemo } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import { FavIcon } from "~/components/deer-flow/fav-icon";
 import Image from "~/components/deer-flow/image";
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
+import { MotionLi } from "~/components/deer-flow/motion";
 import { RainbowText } from "~/components/deer-flow/rainbow-text";
 import { Tooltip } from "~/components/deer-flow/tooltip";
+import OptimizedSyntaxHighlighter from "~/components/optimized/syntax-highlighter";
 import {
   Accordion,
   AccordionContent,
@@ -47,7 +44,7 @@ export function ResearchActivitiesBlock({
         {activityIds.map(
           (activityId, i) =>
             i !== 0 && (
-              <motion.li
+              <MotionLi
                 key={activityId}
                 style={{ transition: "all 0.4s ease-out" }}
                 initial={{ opacity: 0, y: 24 }}
@@ -60,7 +57,7 @@ export function ResearchActivitiesBlock({
                 <ActivityMessage messageId={activityId} />
                 <ActivityListItem messageId={activityId} />
                 {i !== activityIds.length - 1 && <hr className="my-8" />}
-              </motion.li>
+              </MotionLi>
             ),
         )}
       </ul>
@@ -183,7 +180,7 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
             {pageResults
               .filter((result) => result.type === "page")
               .map((searchResult, i) => (
-                <motion.li
+                <MotionLi
                   key={`search-result-${i}`}
                   className="text-muted-foreground bg-accent flex max-w-40 gap-2 rounded-md px-2 py-1 text-sm"
                   initial={{ opacity: 0, y: 10, scale: 0.66 }}
@@ -202,10 +199,10 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
                   <a href={searchResult.url} target="_blank">
                     {searchResult.title}
                   </a>
-                </motion.li>
+                </MotionLi>
               ))}
             {imageResults.map((searchResult, i) => (
-              <motion.li
+              <MotionLi
                 key={`search-result-${i}`}
                 initial={{ opacity: 0, y: 10, scale: 0.66 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -228,7 +225,7 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
                     imageTransition
                   />
                 </a>
-              </motion.li>
+              </MotionLi>
             ))}
           </ul>
         )}
@@ -255,7 +252,7 @@ function CrawlToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
         </RainbowText>
       </div>
       <ul className="mt-2 flex flex-wrap gap-4">
-        <motion.li
+        <MotionLi
           className="text-muted-foreground bg-accent flex h-40 w-40 gap-2 rounded-md px-2 py-1 text-sm"
           initial={{ opacity: 0, y: 10, scale: 0.66 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -272,7 +269,7 @@ function CrawlToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
           >
             {title ?? url}
           </a>
-        </motion.li>
+        </MotionLi>
       </ul>
     </section>
   );
@@ -314,7 +311,7 @@ function RetrieverToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
                 </li>
               ))}
             {documents.map((doc, i) => (
-              <motion.li
+              <MotionLi
                 key={`search-result-${i}`}
                 className="text-muted-foreground bg-accent flex max-w-40 gap-2 rounded-md px-2 py-1 text-sm"
                 initial={{ opacity: 0, y: 10, scale: 0.66 }}
@@ -327,7 +324,7 @@ function RetrieverToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
               >
                 <FileText size={32} />
                 {doc.title}
-              </motion.li>
+              </MotionLi>
             ))}
           </ul>
         )}
@@ -340,7 +337,6 @@ function PythonToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
   const code = useMemo<string | undefined>(() => {
     return (toolCall.args as { code?: string }).code;
   }, [toolCall.args]);
-  const { resolvedTheme } = useTheme();
   return (
     <section className="mt-4 pl-4">
       <div className="flex items-center">
@@ -354,9 +350,8 @@ function PythonToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
       </div>
       <div>
         <div className="bg-accent mt-2 max-h-[400px] max-w-[calc(100%-120px)] overflow-y-auto rounded-md p-2 text-sm">
-          <SyntaxHighlighter
+          <OptimizedSyntaxHighlighter
             language="python"
-            style={resolvedTheme === "dark" ? dark : docco}
             customStyle={{
               background: "transparent",
               border: "none",
@@ -364,7 +359,7 @@ function PythonToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
             }}
           >
             {code?.trim() ?? ""}
-          </SyntaxHighlighter>
+          </OptimizedSyntaxHighlighter>
         </div>
       </div>
       {toolCall.result && <PythonToolCallResult result={toolCall.result} />}
@@ -373,8 +368,7 @@ function PythonToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
 }
 
 function PythonToolCallResult({ result }: { result: string }) {
-  const { resolvedTheme } = useTheme();
-  const hasError = useMemo(
+    const hasError = useMemo(
     () => result.includes("Error executing code:\n"),
     [result],
   );
@@ -402,9 +396,8 @@ function PythonToolCallResult({ result }: { result: string }) {
         {hasError ? "Error when executing the above code" : "Execution output"}
       </div>
       <div className="bg-accent mt-2 max-h-[400px] max-w-[calc(100%-120px)] overflow-y-auto rounded-md p-2 text-sm">
-        <SyntaxHighlighter
+        <OptimizedSyntaxHighlighter
           language="plaintext"
-          style={resolvedTheme === "dark" ? dark : docco}
           customStyle={{
             color: hasError ? "red" : "inherit",
             background: "transparent",
@@ -413,7 +406,7 @@ function PythonToolCallResult({ result }: { result: string }) {
           }}
         >
           {error ?? stdout ?? "(empty)"}
-        </SyntaxHighlighter>
+        </OptimizedSyntaxHighlighter>
       </div>
     </>
   );
@@ -421,8 +414,7 @@ function PythonToolCallResult({ result }: { result: string }) {
 
 function MCPToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
   const tool = useMemo(() => findMCPTool(toolCall.name), [toolCall.name]);
-  const { resolvedTheme } = useTheme();
-  return (
+    return (
     <section className="mt-4 pl-4">
       <div className="w-fit overflow-y-auto rounded-md py-0">
         <Accordion type="single" collapsible className="w-full">
@@ -443,9 +435,8 @@ function MCPToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
             <AccordionContent>
               {toolCall.result && (
                 <div className="bg-accent max-h-[400px] max-w-[560px] overflow-y-auto rounded-md text-sm">
-                  <SyntaxHighlighter
+                  <OptimizedSyntaxHighlighter
                     language="json"
-                    style={resolvedTheme === "dark" ? dark : docco}
                     customStyle={{
                       background: "transparent",
                       border: "none",
@@ -453,7 +444,7 @@ function MCPToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
                     }}
                   >
                     {toolCall.result.trim()}
-                  </SyntaxHighlighter>
+                  </OptimizedSyntaxHighlighter>
                 </div>
               )}
             </AccordionContent>

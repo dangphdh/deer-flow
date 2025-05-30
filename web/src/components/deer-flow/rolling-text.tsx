@@ -1,9 +1,8 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { motion, AnimatePresence } from "framer-motion";
-
 import { cn } from "~/lib/utils";
+import { MotionDiv, OptimizedAnimatePresence } from "~/components/deer-flow/motion";
 
 export function RollingText({
   className,
@@ -19,8 +18,8 @@ export function RollingText({
         className,
       )}
     >
-      <AnimatePresence mode="popLayout">
-        <motion.div
+      <OptimizedAnimatePresence mode="popLayout">
+        <MotionDiv
           className="absolute w-fit"
           style={{ transition: "all 0.3s ease-in-out" }}
           initial={{ y: "100%", opacity: 0 }}
@@ -29,8 +28,8 @@ export function RollingText({
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           {children}
-        </motion.div>
-      </AnimatePresence>
+        </MotionDiv>
+      </OptimizedAnimatePresence>
     </span>
   );
 }
