@@ -18,7 +18,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import "~/styles/prosemirror.css";
 import { resourceSuggestion } from "./resource-suggestion";
-import React, { forwardRef, useMemo, useRef } from "react";
+import React, { forwardRef, useEffect, useMemo, useRef } from "react";
 import type { Resource } from "~/core/messages";
 import { useRAGProvider } from "~/core/api/hooks";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -76,6 +76,9 @@ function formatItem(item: JSONContent): {
 const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
   ({ className, onChange, onEnter }: MessageInputProps, ref) => {
     const editorRef = useRef<Editor>(null);
+    const handleEnterRef = useRef<
+      ((message: string, resources: Array<Resource>) => void) | undefined
+    >(onEnter);
     const debouncedUpdates = useDebouncedCallback(
       async (editor: EditorInstance) => {
         if (onChange) {
@@ -100,6 +103,10 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
       },
     }));
 
+    useEffect(() => {
+      handleEnterRef.current = onEnter;
+    }, [onEnter]);
+
     const { provider, loading } = useRAGProvider();
 
     const extensions = useMemo(() => {
@@ -116,6 +123,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
           transformCopiedText: false,
         }),
         Placeholder.configure({
+          showOnlyCurrent: false,
           placeholder: provider
             ? "What can I do for you? \nYou may refer to RAG resources by using @."
             : "What can I do for you?",
@@ -126,11 +134,11 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
           addKeyboardShortcuts() {
             return {
               Enter: () => {
-                if (onEnter) {
+                if (handleEnterRef.current) {
                   const { text, resources } = formatMessage(
                     this.editor.getJSON() ?? [],
                   );
-                  onEnter(text, resources);
+                  handleEnterRef.current(text, resources);
                 }
                 return this.editor.commands.clearContent();
               },
@@ -149,7 +157,7 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
         );
       }
       return extensions;
-    }, [onEnter, provider]);
+    }, [provider]);
 
     if (loading) {
       return (
@@ -169,8 +177,9 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
             editorProps={{
               attributes: {
                 class:
-                  "prose prose-base dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
+                  "prose prose-base dark:prose-invert inline-editor font-default focus:outline-none max-w-full",
               },
+              transformPastedHTML: transformPastedHTML,
             }}
             onCreate={({ editor }) => {
               editorRef.current = editor;
@@ -184,5 +193,19 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
     );
   },
 );
+
+function transformPastedHTML(html: string) {
+  try {
+    // Strip HTML from user-pasted content
+    const tempEl = document.createElement("div");
+    tempEl.innerHTML = html;
+
+    return tempEl.textContent || tempEl.innerText || "";
+  } catch (error) {
+    console.error("Error transforming pasted HTML", error);
+
+    return "";
+  }
+}
 
 export default MessageInput;
