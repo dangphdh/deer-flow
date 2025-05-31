@@ -33,7 +33,7 @@ export default function HomePage() {
           <Tooltip title="Star OverBloom on GitHub">
             <Button variant="ghost" size="icon" asChild>
               <Link
-                href="https://github.com/bytedance/deer-flow"
+                href="https://github.com/"
                 target="_blank"
               >
                 <GithubOutlined />
