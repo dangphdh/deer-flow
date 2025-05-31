@@ -1,13 +1,19 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { Check, Copy, Headphones, Pencil, Undo2, X } from "lucide-react";
+import { Check, Copy, Download, Headphones, Pencil, Undo2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { ScrollContainer } from "~/components/deer-flow/scroll-container";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useReplay } from "~/core/replay";
 import { closeResearch, listenToPodcast, useStore } from "~/core/store";
@@ -49,6 +55,62 @@ export function ResearchBlock({
 
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const handleDownload = useCallback((format: 'markdown' | 'text' = 'markdown') => {
+    if (!reportId) {
+      return;
+    }
+    const report = useStore.getState().messages.get(reportId);
+    if (!report) {
+      return;
+    }
+    
+    let content = report.content;
+    let mimeType = 'text/markdown';
+    let extension = 'md';
+    
+    // Process content based on format
+    if (format === 'text') {
+      // Remove markdown formatting for plain text
+      content = content
+        .replace(/^#{1,6}\s+/gm, '') // Remove headers
+        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+        .replace(/\*(.*?)\*/g, '$1') // Remove italic
+        .replace(/`(.*?)`/g, '$1') // Remove inline code
+        .replace(/^\s*[-*+]\s+/gm, '• ') // Convert bullet points
+        .replace(/^\s*\d+\.\s+/gm, (match, offset, string) => {
+          const lineStart = string.lastIndexOf('\n', offset) + 1;
+          const lineNumber = string.substring(0, offset).split('\n').length;
+          return `${lineNumber - string.substring(0, lineStart).split('\n').length + 1}. `;
+        }) // Convert numbered lists
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+        .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+        .replace(/\n{3,}/g, '\n\n'); // Clean up extra newlines
+      
+      mimeType = 'text/plain';
+      extension = 'txt';
+    }
+    
+    // Create a blob with the report content
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary link element and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Generate a filename based on the report content or use a default
+    const title = report.content.split('\n')[0]?.replace(/^#\s*/, '') ?? 'Research Report';
+    const sanitizedTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    link.download = `${sanitizedTitle}.${extension}`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up the object URL
+    URL.revokeObjectURL(url);
+  }, [reportId]);
   const handleCopy = useCallback(() => {
     if (!reportId) {
       return;
@@ -102,6 +164,27 @@ export function ResearchBlock({
                 >
                   {editing ? <Undo2 /> : <Pencil />}
                 </Button>
+              </Tooltip>
+              <Tooltip title="Download report">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="text-gray-400"
+                      size="icon"
+                      variant="ghost"
+                    >
+                      <Download />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleDownload('markdown')}>
+                      Download as Markdown (.md)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDownload('text')}>
+                      Download as Plain Text (.txt)
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </Tooltip>
               <Tooltip title="Copy">
                 <Button
