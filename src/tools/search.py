@@ -62,11 +62,12 @@ def get_web_search_tool(max_search_results: int):
 
 
 if __name__ == "__main__":
-    results = LoggedDuckDuckGoSearch(
+    results = LoggedSerperSearch(
         name="web_search", max_results=3, output_format="list"
     )
-    print(results.name)
-    print(results.description)
-    print(results.args)
-    # .invoke("cute panda")
-    # print(json.dumps(results, indent=2, ensure_ascii=False))
+    results = results.invoke("cute panda")
+    # print(results.name)
+    # print(results.description)
+    # print(results.args)
+    # # .invoke("cute panda")
+    # # print(json.dumps(results, indent=2, ensure_ascii=False))

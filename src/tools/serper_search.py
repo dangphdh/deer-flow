@@ -16,7 +16,7 @@ class SerperSearchTool(BaseTool):
     description: str = (
         "Searches the web using Serper.dev (Google Search API). Requires SERPER_API_KEY in environment."
     )
-    max_results: int = Field(default=5, description="Maximum number of results to return.")
+    max_results: int = Field(default=10, description="Maximum number of results to return.")
 
     def _run(self, query: str) -> List[Dict]:
         headers = {"X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json"}
