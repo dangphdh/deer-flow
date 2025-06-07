@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from src.rag.retriever import Resource
 from src.config.report_style import ReportStyle
+from src.config.report_style import ReportStyle
 
 
 class ContentItem(BaseModel):
@@ -61,9 +62,6 @@ class ChatRequest(BaseModel):
     )
     report_style: Optional[ReportStyle] = Field(
         ReportStyle.ACADEMIC, description="The style of the report"
-    )
-    enable_deep_thinking: Optional[bool] = Field(
-        False, description="Whether to enable deep thinking"
     )
 
 

@@ -10,7 +10,6 @@ import { Detective } from "~/components/deer-flow/icons/detective";
 import MessageInput, {
   type MessageInputRef,
 } from "~/components/deer-flow/message-input";
-import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
 import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { BorderBeam } from "~/components/magicui/border-beam";
@@ -258,37 +257,6 @@ export function InputBox({
       </div>
       <div className="flex items-center px-4 py-2">
         <div className="flex grow gap-2">
-          {config?.models.reasoning?.[0] && (
-            <Tooltip
-              className="max-w-60"
-              title={
-                <div>
-                  <h3 className="mb-2 font-bold">
-                    Deep Thinking Mode: {enableDeepThinking ? "On" : "Off"}
-                  </h3>
-                  <p>
-                    When enabled, DeerFlow will use reasoning model (
-                    {config.models.reasoning?.[0]}) to generate more thoughtful
-                    plans.
-                  </p>
-                </div>
-              }
-            >
-              <Button
-                className={cn(
-                  "rounded-2xl",
-                  enableDeepThinking && "!border-brand !text-brand",
-                )}
-                variant="outline"
-                onClick={() => {
-                  setEnableDeepThinking(!enableDeepThinking);
-                }}
-              >
-                <Lightbulb /> Deep Thinking
-              </Button>
-            </Tooltip>
-          )}
-
           <Tooltip
             className="max-w-60"
             title={
