@@ -10,8 +10,9 @@ import { Detective } from "~/components/deer-flow/icons/detective";
 import MessageInput, {
   type MessageInputRef,
 } from "~/components/deer-flow/message-input";
-import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
 import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
+import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
+
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { BorderBeam } from "~/components/magicui/border-beam";
 import { Button } from "~/components/ui/button";
