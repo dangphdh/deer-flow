@@ -22,6 +22,7 @@ from src.podcast.graph.builder import build_graph as build_podcast_graph
 from src.ppt.graph.builder import build_graph as build_ppt_graph
 from src.prompt_enhancer.graph.builder import build_graph as build_prompt_enhancer_graph
 from src.prose.graph.builder import build_graph as build_prose_graph
+from src.prompt_enhancer.graph.builder import build_graph as build_prompt_enhancer_graph
 from src.rag.builder import build_retriever
 from src.rag.retriever import Resource
 from src.server.chat_request import (
@@ -332,9 +333,13 @@ async def enhance_prompt(request: EnhancePromptRequest):
                     "POPULAR_SCIENCE": ReportStyle.POPULAR_SCIENCE,
                     "NEWS": ReportStyle.NEWS,
                     "SOCIAL_MEDIA": ReportStyle.SOCIAL_MEDIA,
+                    "academic": ReportStyle.ACADEMIC,
+                    "popular_science": ReportStyle.POPULAR_SCIENCE,
+                    "news": ReportStyle.NEWS,
+                    "social_media": ReportStyle.SOCIAL_MEDIA,
                 }
                 report_style = style_mapping.get(
-                    request.report_style.upper(), ReportStyle.ACADEMIC
+                    request.report_style, ReportStyle.ACADEMIC
                 )
             except Exception:
                 # If invalid style, default to ACADEMIC
