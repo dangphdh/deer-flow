@@ -198,7 +198,52 @@ export function InputBox({
               </div>
             </motion.div>
           )}
-        </OptimizedAnimatePresence>
+          {isEnhanceAnimating && (
+            <motion.div
+              className="pointer-events-none absolute inset-0 z-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="relative h-full w-full">
+                {/* Sparkle effect overlay */}
+                <motion.div
+                  className="absolute inset-0 rounded-[24px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10"
+                  animate={{
+                    background: [
+                      "linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))",
+                      "linear-gradient(225deg, rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))",
+                      "linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))",
+                    ],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                {/* Floating sparkles */}
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute h-2 w-2 rounded-full bg-blue-400"
+                    style={{
+                      left: `${20 + i * 12}%`,
+                      top: `${30 + (i % 2) * 40}%`,
+                    }}
+                    animate={{
+                      y: [-10, -20, -10],
+                      opacity: [0, 1, 0],
+                      scale: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <MessageInput
           className={cn(
             "h-24 px-4 pt-5",
