@@ -125,7 +125,7 @@ export function ResearchBlock({
       setCopied(false);
     }, 1000);
   }, [reportId]);
-    
+
   const handleEdit = useCallback(() => {
     setEditing((editing) => !editing);
   }, []);
