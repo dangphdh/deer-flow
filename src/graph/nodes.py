@@ -48,7 +48,7 @@ def handoff_to_planner(
 def background_investigation_node(state: State, config: RunnableConfig):
     logger.info("background investigation node is running.")
     configurable = Configuration.from_runnable_config(config)
-    query = state["messages"][-1].content
+    query = state.get("research_topic")
     background_investigation_results = None
     if SELECTED_SEARCH_ENGINE == SearchEngine.TAVILY.value:
         searched_content = LoggedTavilySearch(
