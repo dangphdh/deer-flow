@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { Check, Copy, Download, Headphones, Pencil, Undo2, X } from "lucide-react";
+import { Check, Copy, Headphones, Pencil, Undo2, X, Download } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { ScrollContainer } from "~/components/deer-flow/scroll-container";
@@ -202,7 +202,7 @@ export function ResearchBlock({
                   className="text-gray-400"
                   size="icon"
                   variant="ghost"
-                  onClick={() => handleDownload('markdown')}
+                  onClick={handleDownload}
                 >
                   <Download />
                 </Button>
