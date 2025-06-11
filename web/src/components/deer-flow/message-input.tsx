@@ -109,11 +109,6 @@ const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(
           editorRef.current.commands.setContent(content);
         }
       },
-      setContent: (content: string) => {
-        if (editorRef.current) {
-          editorRef.current.commands.setContent(content);
-        }
-      },
     }));
 
     useEffect(() => {
