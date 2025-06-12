@@ -33,6 +33,13 @@ https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e
 - [如何装饰租赁公寓？](https://deerflow.tech/chat?replay=rental-apartment-decoration)
 - [访问我们的官方网站探索更多回放示例。](https://deerflow.tech/#case-studies)
 
+### 火山引擎
+
+目前，DeerFlow 已正式入驻[火山引擎的 FaaS 应用中心](https://console.volcengine.com/vefaas/region:vefaas+cn-beijing/market)，用户可通过体验链接进行在线体验，直观感受其强大功能与便捷操作；同时，为满足不同用户的部署需求，DeerFlow 支持基于火山引擎一键部署，点击部署链接即可快速完成部署流程，开启高效研究之旅。[快来看看吧](https://console.volcengine.com/vefaas/region:vefaas+cn-beijing/market)~
+
+<img width="1800" alt="截屏2025-06-12 13 25 12" src="https://github.com/user-attachments/assets/73c15966-6b79-4dc0-8803-efdaf7c4015e" />
+
+
 ---
 
 ## 📑 目录
