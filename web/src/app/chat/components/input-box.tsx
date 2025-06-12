@@ -9,6 +9,7 @@ import MessageInput, {
   type MessageInputRef,
 } from "~/components/deer-flow/message-input";
 import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
+import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { BorderBeam } from "~/components/magicui/border-beam";
 import { Button } from "~/components/ui/button";
@@ -143,7 +144,7 @@ export function InputBox({
             </MotionDiv>
           )}
           {isEnhanceAnimating && (
-            <motion.div
+            <MotionDiv
               className="pointer-events-none absolute inset-0 z-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -152,7 +153,7 @@ export function InputBox({
             >
               <div className="relative h-full w-full">
                 {/* Sparkle effect overlay */}
-                <motion.div
+                <MotionDiv
                   className="absolute inset-0 rounded-[24px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10"
                   animate={{
                     background: [
@@ -165,7 +166,7 @@ export function InputBox({
                 />
                 {/* Floating sparkles */}
                 {[...Array(6)].map((_, i) => (
-                  <motion.div
+                  <MotionDiv
                     key={i}
                     className="absolute h-2 w-2 rounded-full bg-blue-400"
                     style={{
@@ -185,9 +186,9 @@ export function InputBox({
                   />
                 ))}
               </div>
-            </motion.div>
+            </MotionDiv>
           )}
-        </AnimatePresence>
+        </OptimizedAnimatePresence>
         <MessageInput
           className={cn(
             "h-24 px-4 pt-5",
@@ -243,13 +244,25 @@ export function InputBox({
               onClick={handleEnhancePrompt}
               disabled={isEnhancing || currentPrompt.trim() === ""}
             >
-              {isEnhancing ? (
+                {isEnhancing ? (
                 <div className="flex h-10 w-10 items-center justify-center">
                   <div className="bg-foreground h-3 w-3 animate-bounce rounded-full opacity-70" />
                 </div>
-              ) : (
-                <MagicWandIcon className="text-brand" />
-              )}
+                ) : (
+                <svg 
+                  className="h-5 w-5 text-brand" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M9 5l7 7-7 7" 
+                  />
+                </svg>
+                )}
             </Button>
           </Tooltip>
           <Tooltip title={responding ? "Stop" : "Send"}>

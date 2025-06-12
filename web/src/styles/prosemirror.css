@@ -39,6 +39,7 @@
 .ProseMirror .mention {
   background-color: var(--purple-light);
   border-radius: 0.4rem;
+  -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
   color: var(--brand);
   padding: 0.1rem 0.3rem;
@@ -155,6 +156,7 @@
 
 ul[data-type="taskList"] li > label {
   margin-right: 0.2rem;
+  -webkit-user-select: none;
   user-select: none;
 }
 
