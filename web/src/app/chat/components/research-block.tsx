@@ -126,32 +126,6 @@ export function ResearchBlock({
     }, 1000);
   }, [reportId]);
 
-  // Download report as markdown
-  const handleDownload = useCallback(() => {
-    if (!reportId) {
-      return;
-    }
-    const report = useStore.getState().messages.get(reportId);
-    if (!report) {
-      return;
-    }
-    const now = new Date();
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
-    const filename = `research-report-${timestamp}.md`;
-    const blob = new Blob([report.content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 0);
-  }, [reportId]);
-
     
   const handleEdit = useCallback(() => {
     setEditing((editing) => !editing);
@@ -228,7 +202,7 @@ export function ResearchBlock({
                   className="text-gray-400"
                   size="icon"
                   variant="ghost"
-                  onClick={handleDownload}
+                  onClick={() => handleDownload('markdown')}
                 >
                   <Download />
                 </Button>
