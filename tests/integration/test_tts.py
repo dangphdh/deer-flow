@@ -244,6 +244,5 @@ class TestVolcengineTTS:
         result = tts.text_to_speech("Hello, world!")
         # Verify the result
         assert result["success"] is False
-        # The TTS error is caught and returned as a string
-        assert result["error"] == "TTS API call error"
+        assert result["error"] == "Network error"
         assert result["audio_data"] is None
