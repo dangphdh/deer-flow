@@ -1,9 +1,25 @@
-// Configuration loader for the application
+import { type DeerFlowConfig } from "../config/types";
+
+import { resolveServiceURL } from "./resolve-service-url";
+
+declare global {
+  interface Window {
+    __deerflowConfig: DeerFlowConfig;
+  }
+}
+
 export async function loadConfig() {
-  // Return default configuration values
-  // You can extend this to load from environment variables or API calls
-  return {
-    appName: "OverBloom",
-    // Add other configuration properties as needed
-  };
+  const res = await fetch(resolveServiceURL("./config"));
+  const config = await res.json();
+  return config;
+}
+
+export function getConfig(): DeerFlowConfig {
+  if (
+    typeof window === "undefined" ||
+    typeof window.__deerflowConfig === "undefined"
+  ) {
+    throw new Error("Config not loaded");
+  }
+  return window.__deerflowConfig;
 }

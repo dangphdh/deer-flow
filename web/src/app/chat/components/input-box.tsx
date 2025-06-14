@@ -5,6 +5,8 @@ import { MagicWandIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, Lightbulb, X } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { ArrowUp, Lightbulb, X } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { Detective } from "~/components/deer-flow/icons/detective";
 import MessageInput, {
@@ -17,9 +19,10 @@ import { Tooltip } from "~/components/deer-flow/tooltip";
 import { BorderBeam } from "~/components/magicui/border-beam";
 import { Button } from "~/components/ui/button";
 import { enhancePrompt } from "~/core/api";
-import { useConfig } from "~/core/api/hooks";
+import { getConfig } from "~/core/api/config";
 import type { Option, Resource } from "~/core/messages";
 import {
+  setEnableDeepThinking,
   setEnableDeepThinking,
   setEnableBackgroundInvestigation,
   useSettingsStore,
@@ -51,10 +54,13 @@ export function InputBox({
   const enableDeepThinking = useSettingsStore(
     (state) => state.general.enableDeepThinking,
   );
+  const enableDeepThinking = useSettingsStore(
+    (state) => state.general.enableDeepThinking,
+  );
   const backgroundInvestigation = useSettingsStore(
     (state) => state.general.enableBackgroundInvestigation,
   );
-  const { config, loading } = useConfig();
+  const reasoningModel = useMemo(() => getConfig().models.reasoning?.[0], []);
   const reportStyle = useSettingsStore((state) => state.general.reportStyle);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<MessageInputRef>(null);
@@ -259,7 +265,7 @@ export function InputBox({
       </div>
       <div className="flex items-center px-4 py-2">
         <div className="flex grow gap-2">
-          {config?.models.reasoning?.[0] && (
+          {reasoningModel && (
             <Tooltip
               className="max-w-60"
               title={
@@ -269,8 +275,7 @@ export function InputBox({
                   </h3>
                   <p>
                     When enabled, DeerFlow will use reasoning model (
-                    {config.models.reasoning?.[0]}) to generate more thoughtful
-                    plans.
+                    {reasoningModel}) to generate more thoughtful plans.
                   </p>
                 </div>
               }

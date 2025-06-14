@@ -9,8 +9,6 @@ import Script from "next/script";
 
 import { PerformanceSummary } from "~/components/deer-flow/performance-summary";
 import { ThemeProviderWrapper } from "~/components/deer-flow/theme-provider-wrapper";
-import { WebVitals } from "~/components/deer-flow/web-vitals";
-import { WebVitalsMonitor } from "~/components/deer-flow/web-vitals-monitor";
 import { loadConfig } from "~/core/api/config";
 import { env } from "~/env";
 
@@ -37,10 +35,6 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <head>
-        {/* Performance optimizations: Resource hints for external domains */}
-        <link rel="preconnect" href="https://cdn.amplitude.com" />
-        <link rel="dns-prefetch" href="https://cdn.amplitude.com" />
-        
         <script>{`window.__deerflowConfig = ${JSON.stringify(conf)}`}</script>
         {/* Define isSpace function globally to fix markdown-it issues with Next.js + Turbopack
           https://github.com/markdown-it/markdown-it/issues/1082#issuecomment-2749656365 */}
