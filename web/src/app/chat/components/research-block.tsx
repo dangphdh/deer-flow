@@ -125,7 +125,6 @@ export function ResearchBlock({
       setCopied(false);
     }, 1000);
   }, [reportId]);
-
     
   const handleEdit = useCallback(() => {
     setEditing((editing) => !editing);
@@ -202,7 +201,7 @@ export function ResearchBlock({
                   className="text-gray-400"
                   size="icon"
                   variant="ghost"
-                  onClick={handleDownload}
+                  onClick={() => handleDownload('markdown')}
                 >
                   <Download />
                 </Button>
