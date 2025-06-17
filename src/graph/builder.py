@@ -13,6 +13,7 @@ from .nodes import (
     research_team_node,
     researcher_node,
     coder_node,
+    multi_agent_expert_node,
     human_feedback_node,
     background_investigation_node,
 )
@@ -27,11 +28,32 @@ def continue_to_running_research_team(state: State):
     for step in current_plan.steps:
         if not step.execution_res:
             break
+    
+    # Check if multi-agent collaboration is enabled and beneficial for this step
+    enable_multi_agent = state.get("enable_multi_agent_experts", False)
+    if enable_multi_agent and _should_use_multi_agent(step):
+        return "multi_agent_experts"
+    
     if step.step_type and step.step_type == StepType.RESEARCH:
         return "researcher"
     if step.step_type and step.step_type == StepType.PROCESSING:
         return "coder"
     return "planner"
+
+
+def _should_use_multi_agent(step):
+    """Determine if multi-agent experts should be used for this step."""
+    # Example logic: use multi-agent for research or complex steps
+    keywords = ["collaborative", "multi-agent", "panel", "expert", "comprehensive", "debate", "discussion"]
+    if hasattr(step, "title") and any(k in step.title.lower() for k in keywords):
+        return True
+    if hasattr(step, "description") and any(k in step.description.lower() for k in keywords):
+        return True
+    # Optionally, use for all RESEARCH steps
+    from src.prompts.planner_model import StepType
+    if hasattr(step, "step_type") and step.step_type == StepType.RESEARCH:
+        return True
+    return False
 
 
 def _build_base_graph():
@@ -45,12 +67,13 @@ def _build_base_graph():
     builder.add_node("research_team", research_team_node)
     builder.add_node("researcher", researcher_node)
     builder.add_node("coder", coder_node)
+    builder.add_node("multi_agent_experts", multi_agent_expert_node)
     builder.add_node("human_feedback", human_feedback_node)
     builder.add_edge("background_investigator", "planner")
     builder.add_conditional_edges(
         "research_team",
         continue_to_running_research_team,
-        ["planner", "researcher", "coder"],
+        ["planner", "researcher", "coder", "multi_agent_experts"],
     )
     builder.add_edge("reporter", END)
     return builder

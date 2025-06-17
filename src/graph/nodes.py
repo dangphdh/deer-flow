@@ -4,7 +4,7 @@
 import json
 import logging
 import os
-from typing import Annotated, Literal
+from typing import Annotated, Literal, List
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
@@ -13,6 +13,8 @@ from langgraph.types import Command, interrupt
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
 from src.agents import create_agent
+from src.agents.multi_agent_coordinator import MultiAgentCoordinator
+from src.config.multi_agent import get_multi_agent_config, detect_domain_from_query, get_domain_experts
 from src.tools.search import LoggedTavilySearch
 from src.tools import (
     crawl_tool,
@@ -502,3 +504,165 @@ async def coder_node(
         "coder",
         [python_repl_tool],
     )
+
+
+async def multi_agent_expert_node(
+    state: State, config: RunnableConfig
+) -> Command[Literal["research_team"]]:
+    """Multi-agent expert collaboration node that brings together multiple specialized experts."""
+    logger.info("Multi-agent expert collaboration starting.")
+    
+    current_plan = state.get("current_plan")
+    if not current_plan:
+        logger.error("No current plan available for multi-agent collaboration")
+        return Command(goto="research_team")
+    
+    # Find the current step that needs expert collaboration
+    current_step = None
+    for step in current_plan.steps:
+        if not step.execution_res:
+            current_step = step
+            break
+    
+    if not current_step:
+        logger.info("No unexecuted step found for multi-agent collaboration")
+        return Command(goto="research_team")
+    
+    logger.info(f"Starting multi-agent collaboration for step: {current_step.title}")
+    
+    try:
+        # Initialize multi-agent coordinator
+        coordinator = MultiAgentCoordinator(max_experts=4, synthesis_interval=3)
+        
+        # Determine expert types based on step description and topic
+        expert_types = _determine_expert_types(current_step.title, current_step.description)
+        
+        # Start collaboration session
+        session_id = coordinator.start_collaboration(
+            topic=current_step.title,
+            context=f"Task Description: {current_step.description}\nLocale: {state.get('locale', 'en-US')}",
+            expert_types=expert_types
+        )
+        
+        # Run multiple rounds of collaboration
+        all_turns = []
+        max_rounds = 3  # Configurable number of collaboration rounds
+        
+        for round_num in range(max_rounds):
+            logger.info(f"Running collaboration round {round_num + 1}/{max_rounds}")
+            round_turns = coordinator.run_collaboration_round(session_id)
+            all_turns.extend(round_turns)
+            
+            # Check if we have enough insights (early stopping condition)
+            if len(all_turns) >= 10:  # Configurable threshold
+                break
+        
+        # Get comprehensive summary
+        collaboration_summary = coordinator.get_collaboration_summary(session_id)
+        expert_perspectives = coordinator.get_expert_perspectives(session_id)
+        
+        # Format the final result
+        final_result = _format_multi_agent_results(
+            collaboration_summary, 
+            expert_perspectives, 
+            current_step.title
+        )
+        
+        # Update the step with execution result
+        current_step.execution_res = final_result
+        
+        logger.info(f"Multi-agent collaboration completed for step: {current_step.title}")
+        
+        return Command(
+            update={
+                "messages": [
+                    HumanMessage(
+                        content=final_result,
+                        name="multi_agent_experts",
+                    )
+                ],
+                "observations": state.get("observations", []) + [final_result],
+            },
+            goto="research_team",
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in multi-agent collaboration: {e}")
+        # Fallback to regular research if multi-agent fails
+        return Command(goto="research_team")
+
+
+def _determine_expert_types(title: str, description: str) -> List[str]:
+    """Determine appropriate expert types based on the task."""
+    content = f"{title} {description}".lower()
+    
+    expert_types = ["research_analyst"]  # Always include research analyst
+    
+    # Add technical expert if task involves technical aspects
+    technical_keywords = ["implementation", "code", "technical", "architecture", "system", "software", "algorithm"]
+    if any(keyword in content for keyword in technical_keywords):
+        expert_types.append("technical_architect")
+    
+    # Add AI specialist for AI/ML related tasks
+    ai_keywords = ["ai", "ml", "machine learning", "artificial intelligence", "model", "neural", "deep learning"]
+    if any(keyword in content for keyword in ai_keywords):
+        expert_types.append("ai_specialist")
+    
+    # Add business analyst for business-related tasks
+    business_keywords = ["business", "market", "strategy", "roi", "cost", "revenue", "commercial"]
+    if any(keyword in content for keyword in business_keywords):
+        expert_types.append("business_analyst")
+    
+    # Add security expert for security-related tasks
+    security_keywords = ["security", "privacy", "encryption", "vulnerability", "compliance", "risk"]
+    if any(keyword in content for keyword in security_keywords):
+        expert_types.append("security_expert")
+    
+    # Ensure we have at least 2 experts and at most 4
+    if len(expert_types) < 2:
+        expert_types.append("technical_architect")
+    
+    return expert_types[:4]
+
+
+def _format_multi_agent_results(summary: str, perspectives: dict, task_title: str) -> str:
+    """Format the multi-agent collaboration results into a comprehensive report."""
+    result = f"""# Multi-Agent Expert Analysis: {task_title}
+
+{summary}
+
+## Individual Expert Perspectives
+
+"""
+    
+    for expert_name, data in perspectives.items():
+        result += f"""### {expert_name} - {data['role']}
+
+**Expertise**: {data['expertise']}
+**Perspective**: {data['perspective']}
+
+**Key Contributions**:
+"""
+        for i, contribution in enumerate(data['contributions']):
+            result += f"\n{i+1}. {contribution}\n"
+        
+        result += "\n---\n"
+    
+    result += """
+## Collaboration Insights
+
+This analysis represents the collective intelligence of multiple domain experts, each contributing their specialized knowledge and perspective. The diversity of viewpoints ensures comprehensive coverage of the topic while identifying potential blind spots and areas for further investigation.
+
+## Methodology
+
+The multi-agent approach employed:
+1. **Diverse Expertise**: Assembled experts from different domains relevant to the task
+2. **Iterative Collaboration**: Multiple rounds of expert input and synthesis
+3. **Cross-Pollination**: Experts building on each other's insights
+4. **Dynamic Questioning**: Follow-up questions to deepen analysis
+5. **Synthesis Integration**: Regular consolidation of insights
+
+This collaborative approach mirrors real-world expert panels and research teams, providing more robust and well-rounded analysis than single-perspective approaches.
+"""
+    
+    return result

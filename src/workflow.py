@@ -29,6 +29,7 @@ async def run_agent_workflow_async(
     max_plan_iterations: int = 1,
     max_step_num: int = 3,
     enable_background_investigation: bool = True,
+    enable_multi_agent_experts: bool = False,
 ):
     """Run the agent workflow asynchronously with the given user input.
 
@@ -38,6 +39,7 @@ async def run_agent_workflow_async(
         max_plan_iterations: Maximum number of plan iterations
         max_step_num: Maximum number of steps in a plan
         enable_background_investigation: If True, performs web search before planning to enhance context
+        enable_multi_agent_experts: If True, enables multi-agent expert collaboration for complex analysis
 
     Returns:
         The final state after the workflow completes
@@ -54,6 +56,7 @@ async def run_agent_workflow_async(
         "messages": [{"role": "user", "content": user_input}],
         "auto_accepted_plan": True,
         "enable_background_investigation": enable_background_investigation,
+        "enable_multi_agent_experts": enable_multi_agent_experts,
     }
     config = {
         "configurable": {
