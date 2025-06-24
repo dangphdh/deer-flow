@@ -16,6 +16,7 @@ venv/
 
 # Environment variables
 .env
+.vscode
 
 # user conf
 conf.yaml

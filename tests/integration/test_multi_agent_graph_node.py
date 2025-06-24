@@ -8,7 +8,6 @@ import json
 
 from src.graph.types import State, Command
 from src.graph.nodes import multi_agent_expert_node
-from src.graph.graph import Graph
 from src.graph.builder import build_graph
 from src.agents.multi_agent_coordinator import MultiAgentCoordinator, CollaborationTurn, CollaborationSession
 from src.agents.expert_agents import ExpertProfile

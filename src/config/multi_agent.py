@@ -75,3 +75,15 @@ def get_multi_agent_config(config: Configuration) -> MultiAgentExpertConfig:
             multi_agent_config.dynamic_experts = bool(ma_config["dynamic_experts"])
     
     return multi_agent_config
+
+
+def get_domain_experts(config: Configuration) -> Dict[str, Any]:
+    """Get domain experts configuration from global config."""
+    if not hasattr(config, "multi_agent") or not config.multi_agent:
+        return {}
+        
+    ma_config = config.multi_agent
+    if isinstance(ma_config, dict) and "domain_experts" in ma_config:
+        return ma_config["domain_experts"]
+    
+    return {}

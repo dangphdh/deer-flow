@@ -80,6 +80,7 @@ export const MCPTab: Tab = ({ settings, onChange }) => {
           <a
             className="ml-1"
             target="_blank"
+            rel="noopener noreferrer"
             href="https://modelcontextprotocol.io/"
           >
             learn more about MCP.

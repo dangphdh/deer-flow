@@ -10,9 +10,8 @@ import { Detective } from "~/components/deer-flow/icons/detective";
 import MessageInput, {
   type MessageInputRef,
 } from "~/components/deer-flow/message-input";
-import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
 import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
-
+import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { BorderBeam } from "~/components/magicui/border-beam";
 import { Button } from "~/components/ui/button";
@@ -54,7 +53,7 @@ export function InputBox({
   const backgroundInvestigation = useSettingsStore(
     (state) => state.general.enableBackgroundInvestigation,
   );
-  const reasoningModel = useMemo(() => getConfig().models.reasoning?.[0], []);
+  const reasoningModel = useMemo(() => getConfig().models?.reasoning?.[0], []);
   const reportStyle = useSettingsStore((state) => state.general.reportStyle);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<MessageInputRef>(null);
@@ -150,7 +149,7 @@ export function InputBox({
                 size={16}
                 onClick={onRemoveFeedback}
               />
-            </motion.div>
+            </MotionDiv>
           )}
           {isEnhanceAnimating && (
             <motion.div
@@ -197,7 +196,7 @@ export function InputBox({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </OptimizedAnimatePresence>
         <MessageInput
           className={cn(
             "h-24 px-4 pt-5",

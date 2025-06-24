@@ -14,7 +14,7 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 
 from src.agents import create_agent
 from src.agents.multi_agent_coordinator import MultiAgentCoordinator
-from src.config.multi_agent import get_multi_agent_config, detect_domain_from_query, get_domain_experts
+from src.config.multi_agent import get_multi_agent_config, get_domain_experts
 from src.tools.search import LoggedTavilySearch
 from src.tools import (
     crawl_tool,
