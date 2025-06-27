@@ -33,7 +33,6 @@ const geist = Geist({
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const conf = await loadConfig();
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <head>
