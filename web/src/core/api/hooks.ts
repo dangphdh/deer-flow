@@ -9,7 +9,7 @@ import type { DeerFlowConfig } from "../config";
 import { useReplay } from "../replay";
 
 import { fetchReplayTitle } from "./chat";
-import { getConfig } from "./config";
+import { resolveServiceURL } from "./resolve-service-url";
 
 export function useReplayMetadata() {
   const { isReplay } = useReplay();
@@ -56,8 +56,17 @@ export function useConfig(): {
       setLoading(false);
       return;
     }
-    setProvider(getConfig().rag.provider);
-    setLoading(false);
+    fetch(resolveServiceURL("./config"))
+      .then((res) => res.json())
+      .then((config) => {
+        setConfig(config);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch config", err);
+        setConfig(null);
+        setLoading(false);
+      });
   }, []);
 
   return { config, loading };

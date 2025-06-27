@@ -9,7 +9,6 @@ import Script from "next/script";
 
 import { PerformanceSummary } from "~/components/deer-flow/performance-summary";
 import { ThemeProviderWrapper } from "~/components/deer-flow/theme-provider-wrapper";
-import { loadConfig } from "~/core/api/config";
 import { env } from "~/env";
 
 import { Toaster } from "../components/deer-flow/toaster";
@@ -31,11 +30,9 @@ const geist = Geist({
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const conf = await loadConfig();
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <head>
-        <script>{`window.__deerflowConfig = ${JSON.stringify(conf)}`}</script>
         {/* Define isSpace function globally to fix markdown-it issues with Next.js + Turbopack
           https://github.com/markdown-it/markdown-it/issues/1082#issuecomment-2749656365 */}
         <Script id="markdown-it-fix" strategy="beforeInteractive"> {
