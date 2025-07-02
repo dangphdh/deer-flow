@@ -142,6 +142,7 @@ export function InputBox({
               exit={{ opacity: 0, scale: 0 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
+            
               <div className="text-brand flex h-full w-full items-center justify-center text-sm opacity-90">
                 {feedback.option.text}
               </div>
@@ -150,7 +151,7 @@ export function InputBox({
                 size={16}
                 onClick={onRemoveFeedback}
               />
-            </motion.div>
+            </MotionDiv>
           )}
           {isEnhanceAnimating && (
             <motion.div
@@ -197,7 +198,7 @@ export function InputBox({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </OptimizedAnimatePresence>
         <MessageInput
           className={cn(
             "h-24 px-4 pt-5",

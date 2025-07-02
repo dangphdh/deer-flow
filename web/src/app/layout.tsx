@@ -33,6 +33,7 @@ const geist = Geist({
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const conf = await loadConfig();
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <head>
@@ -43,15 +44,15 @@ export default async function RootLayout({
         <script>{`window.__deerflowConfig = ${JSON.stringify(conf)}`}</script>
         {/* Define isSpace function globally to fix markdown-it issues with Next.js + Turbopack
           https://github.com/markdown-it/markdown-it/issues/1082#issuecomment-2749656365 */}
-        <Script id="markdown-it-fix" strategy="beforeInteractive">
-          {`
+        <Script id="markdown-it-fix" strategy="beforeInteractive"> {
+          `
             if (typeof window !== 'undefined' && typeof window.isSpace === 'undefined') {
               window.isSpace = function(code) {
                 return code === 0x20 || code === 0x09 || code === 0x0A || code === 0x0B || code === 0x0C || code === 0x0D;
               };
             }
-          `}
-        </Script>
+          `
+        }</Script>
       </head>
       <body className="bg-app">
         <ThemeProviderWrapper>{children}</ThemeProviderWrapper>
