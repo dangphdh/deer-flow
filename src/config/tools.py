@@ -23,6 +23,7 @@ SEARCH_MAX_RESULTS = int(os.getenv("SEARCH_MAX_RESULTS", "10"))
 
 class RAGProvider(enum.Enum):
     RAGFLOW = "ragflow"
+    VIKINGDB_KNOWLEDGE_BASE = "vikingdb_knowledge_base"
 
 
 SELECTED_RAG_PROVIDER = os.getenv("RAG_PROVIDER")
