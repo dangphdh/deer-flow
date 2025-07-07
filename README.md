@@ -147,6 +147,8 @@ Explore more details in the [`web`](./web/) directory.
 
 ## Supported Search Engines
 
+### Web Search
+
 DeerFlow supports multiple search engines that can be configured in your `.env` file using the `SEARCH_API` variable:
 
 - **Tavily** (default): A specialized search API for AI applications
@@ -176,6 +178,19 @@ SEARCH_API=serper
 SERPER_API_KEY=your-serper-api-key
 ```
 
+### Private Knowledgebase
+
+DeerFlow support private knowledgebase such as ragflow and vikingdb, so that you can use your private documents to answer questions.
+
+- **[RAGFlow](https://ragflow.io/docs/dev/)**：open source RAG engine
+   ```
+   # examples in .env.example
+   RAG_PROVIDER=ragflow
+   RAGFLOW_API_URL="http://localhost:9388"
+   RAGFLOW_API_KEY="ragflow-xxx"
+   RAGFLOW_RETRIEVAL_SIZE=10
+   ```
+
 ## Features
 
 ### Core Capabilities
@@ -193,18 +208,11 @@ SERPER_API_KEY=your-serper-api-key
   - Web search via Tavily, Brave Search and more
   - Crawling with Jina
   - Advanced content extraction
+  - Support for private knowledgebase
 
 - 📃 **RAG Integration**
 
   - Supports mentioning files from [RAGFlow](https://github.com/infiniflow/ragflow) within the input box. [Start up RAGFlow server](https://ragflow.io/docs/dev/).
-
-  ```bash
-     # .env
-     RAG_PROVIDER=ragflow
-     RAGFLOW_API_URL="http://localhost:9388"
-     RAGFLOW_API_KEY="ragflow-xxx"
-     RAGFLOW_RETRIEVAL_SIZE=10
-  ```
 
 - 🔗 **MCP Seamless Integration**
   - Expand capabilities for private domain access, knowledge graph, web browsing and more
