@@ -14,7 +14,9 @@
 // SPDX-License-Identifier: MIT
 
 import "./src/env.js";
-import bundleAnalyzer from '@next/bundle-analyzer';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 /** @type {import("next").NextConfig} */
 
@@ -116,8 +118,4 @@ const config = {
   output: "standalone",
 };
 
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-});
-
-export default withBundleAnalyzer(config);
+export default withNextIntl(config);
