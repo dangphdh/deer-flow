@@ -21,7 +21,7 @@ Please visit [our official website](https://deerflow.tech/) for more details.
 
 ### Video
 
-https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e
+<https://github.com/user-attachments/assets/f3786598-1f2a-4d07-919e-8b99dfa1de3e>
 
 In this demo, we showcase how to use DeerFlow to:
 
@@ -204,7 +204,6 @@ DeerFlow support private knowledgebase such as ragflow and vikingdb, so that you
 ### Tools and MCP Integrations
 
 - 🔍 **Search and Retrieval**
-
   - Web search via Tavily, Brave Search and more
   - Crawling with Jina
   - Advanced content extraction
@@ -221,7 +220,6 @@ DeerFlow support private knowledgebase such as ragflow and vikingdb, so that you
 ### Human Collaboration
 
 - 🧠 **Human-in-the-loop**
-
   - Supports interactive modification of research plans using natural language
   - Supports auto-acceptance of research plans
 
@@ -529,6 +527,7 @@ DeerFlow includes a human in the loop mechanism that allows you to review, edit,
    - Via API: Set `auto_accepted_plan: true` in your request
 
 4. **API Integration**: When using the API, you can provide feedback through the `feedback` parameter:
+
    ```json
    {
      "messages": [{ "role": "user", "content": "What is quantum computing?" }],
