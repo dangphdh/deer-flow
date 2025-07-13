@@ -10,7 +10,7 @@ export function Welcome({ className }: { className?: string }) {
   const t = useTranslations("chat.welcome");
 
   return (
-    <MotionDiv
+    <motion.div
       className={cn("flex flex-col", className)}
       style={{ transition: "all 0.2s ease-out" }}
       initial={{ opacity: 0, scale: 0.85 }}
@@ -20,6 +20,6 @@ export function Welcome({ className }: { className?: string }) {
       <div className="text-muted-foreground px-4 text-center text-lg">
         {t("description")}
       </div>
-    </MotionDiv>
+    </motion.div>
   );
 }

@@ -9,7 +9,7 @@ from langchain_community.tools import BraveSearch, DuckDuckGoSearchResults
 from langchain_community.tools.arxiv import ArxivQueryRun
 from langchain_community.utilities import ArxivAPIWrapper, BraveSearchWrapper
 
-from src.config import SearchEngine, SELECTED_SEARCH_ENGINE
+from src.config import SearchEngine, SELECTED_SEARCH_ENGINE, SEARCH_MAX_RESULTS
 from src.config import load_yaml_config
 from src.tools.tavily_search.tavily_search_results_with_images import (
     TavilySearchResultsWithImages,
@@ -64,6 +64,11 @@ serper_search_tool = LoggedSerperSearch(
     output_format="list",
     api_key=os.getenv("SERPER_API_KEY", ""),
 )
+
+def get_search_config():
+    config = load_yaml_config("conf.yaml")
+    search_config = config.get("SEARCH_ENGINE", {})
+    return search_config
 
 # Get the selected search tool
 def get_web_search_tool(max_search_results: int):
@@ -121,11 +126,9 @@ def get_web_search_tool(max_search_results: int):
 
 
 if __name__ == "__main__":
+    import json
     results = LoggedSerperSearch(
         name="web_search", max_results=3, output_format="list"
-    )
-    print(results.name)
-    print(results.description)
-    print(results.args)
-    # .invoke("cute panda")
-    # print(json.dumps(results, indent=2, ensure_ascii=False))
+    ).invoke("cute panda")
+    print(json.dumps(results, indent=2, ensure_ascii=False))
+

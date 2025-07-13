@@ -18,7 +18,7 @@ class CrawlerType(Enum):
 
 
 class Crawler:
-    def __init__(self, crawler_type: CrawlerType = CrawlerType.JINA):
+    def __init__(self, crawler_type: CrawlerType = CrawlerType.PLAYWRIGHT):
         self.crawler_type = crawler_type
     
     async def crawl_async(self, url: str) -> Article:

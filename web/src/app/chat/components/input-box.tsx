@@ -133,9 +133,9 @@ export function InputBox({
       ref={containerRef}
     >
       <div className="w-full">
-        <OptimizedAnimatePresence>
+        <AnimatePresence>
           {feedback && (
-            <MotionDiv
+            <motion.div
               ref={feedbackRef}
               className="bg-background border-brand absolute top-0 left-0 mt-2 ml-4 flex items-center justify-center gap-1 rounded-2xl border px-2 py-0.5"
               initial={{ opacity: 0, scale: 0 }}
@@ -152,7 +152,7 @@ export function InputBox({
                 size={16}
                 onClick={onRemoveFeedback}
               />
-            </MotionDiv>
+            </motion.div>
           )}
           {isEnhanceAnimating && (
             <motion.div
