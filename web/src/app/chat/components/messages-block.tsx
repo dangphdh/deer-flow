@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
+import { motion } from "framer-motion";
 import { FastForward, Play } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
