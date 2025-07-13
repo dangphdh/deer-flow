@@ -9,6 +9,8 @@ import Script from "next/script";
 
 import { PerformanceSummary } from "~/components/deer-flow/performance-summary";
 import { ThemeProviderWrapper } from "~/components/deer-flow/theme-provider-wrapper";
+import { WebVitals } from "~/components/deer-flow/web-vitals";
+import { WebVitalsMonitor } from "~/components/deer-flow/web-vitals-monitor";
 import { env } from "~/env";
 
 import { Toaster } from "../components/deer-flow/toaster";
