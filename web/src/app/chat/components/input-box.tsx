@@ -5,16 +5,13 @@ import { MagicWandIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, Lightbulb, X } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ArrowUp, Lightbulb, X } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
 
 import { Detective } from "~/components/deer-flow/icons/detective";
 import MessageInput, {
   type MessageInputRef,
 } from "~/components/deer-flow/message-input";
-import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
 import { OptimizedAnimatePresence, MotionDiv } from "~/components/deer-flow/motion";
-
+import { ReportStyleDialog } from "~/components/deer-flow/report-style-dialog";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { BorderBeam } from "~/components/magicui/border-beam";
 import { Button } from "~/components/ui/button";
@@ -22,7 +19,6 @@ import { enhancePrompt } from "~/core/api";
 import { useConfig } from "~/core/api/hooks";
 import type { Option, Resource } from "~/core/messages";
 import {
-  setEnableDeepThinking,
   setEnableDeepThinking,
   setEnableBackgroundInvestigation,
   useSettingsStore,
@@ -51,9 +47,6 @@ export function InputBox({
   onCancel?: () => void;
   onRemoveFeedback?: () => void;
 }) {
-  const enableDeepThinking = useSettingsStore(
-    (state) => state.general.enableDeepThinking,
-  );
   const enableDeepThinking = useSettingsStore(
     (state) => state.general.enableDeepThinking,
   );
@@ -249,7 +242,7 @@ export function InputBox({
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </OptimizedAnimatePresence>
         <MessageInput
           className={cn(
             "h-24 px-4 pt-5",
