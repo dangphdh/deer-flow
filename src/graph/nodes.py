@@ -127,7 +127,7 @@ def planner_node(
         response = llm.stream(messages)
         for chunk in response:
             full_response += chunk.content
-    logger.debug(f"Current state messages: {state['messages']}")
+    
     logger.info(f"Planner response: {full_response}")
 
     try:

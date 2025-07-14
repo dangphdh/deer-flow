@@ -158,6 +158,10 @@ async def _astream_workflow_generator(
         if agent and len(agent) > 0:
             agent_name = agent[0].split(":")[0] if ":" in str(agent[0]) else str(agent[0])
         
+        # Extract node name from metadata (this contains the actual node name)
+        if message_metadata and 'langgraph_node' in message_metadata:
+            agent_name = message_metadata['langgraph_node']
+        
         event_stream_message: dict[str, any] = {
             "thread_id": thread_id,
             "agent": agent_name,

@@ -25,6 +25,9 @@ const AnimatePresence = dynamic(() => import('framer-motion').then(mod => ({ def
   loading: () => <>{/* empty loading state */}</>,
 });
 
+// Import just the type to avoid affecting bundle size
+import type { Transition } from 'framer-motion';
+
 // Simplified motion props for common use cases
 interface BasicMotionProps {
   children: ReactNode;
@@ -33,7 +36,7 @@ interface BasicMotionProps {
   initial?: { opacity?: number; y?: string | number; scale?: number };
   animate?: { opacity?: number; y?: string | number; scale?: number };
   exit?: { opacity?: number; y?: string | number; scale?: number };
-  transition?: { duration?: number; ease?: string; delay?: number };
+  transition?: Transition;
   whileHover?: { scale?: number };
   onClick?: () => void;
 }

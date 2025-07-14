@@ -15,7 +15,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
-import { MotionLi, MotionDiv } from "~/components/deer-flow/motion";
+import { MotionLi } from "~/components/deer-flow/motion";
 import { RainbowText } from "~/components/deer-flow/rainbow-text";
 import { RollingText } from "~/components/deer-flow/rolling-text";
 import {
@@ -325,11 +325,12 @@ function ThoughtBlock({
   const [hasAutoCollapsed, setHasAutoCollapsed] = useState(false);
 
   React.useEffect(() => {
-    if (hasMainContent && !hasAutoCollapsed) {
+    // Auto-collapse when main content starts appearing and we have reasoning content
+    if (hasMainContent && !hasAutoCollapsed && content.length > 50) {
       setIsOpen(false);
       setHasAutoCollapsed(true);
     }
-  }, [hasMainContent, hasAutoCollapsed]);
+  }, [hasMainContent, hasAutoCollapsed, content.length]);
 
   if (!content || content.trim() === "") {
     return null;
@@ -442,7 +443,15 @@ function PlanCard({
     thought?: string;
     steps?: { title?: string; description?: string }[];
   }>(() => {
-    return parseJSON(message.content ?? "", {});
+    // Only parse if we have content and it looks like JSON
+    if (!message.content?.trim().startsWith('{')) {
+      return {};
+    }
+    try {
+      return parseJSON(message.content, {});
+    } catch {
+      return {};
+    }
   }, [message.content]);
 
   const reasoningContent = message.reasoningContent;
@@ -450,11 +459,11 @@ function PlanCard({
     message.content && message.content.trim() !== "",
   );
 
-  // 判断是否正在思考：有推理内容但还没有主要内容
-  const isThinking = Boolean(reasoningContent && !hasMainContent);
-
-  // 判断是否应该显示计划：有主要内容就显示（无论是否还在流式传输）
-  const shouldShowPlan = hasMainContent;
+  // Show plan as soon as we have any content, even if still streaming
+  const shouldShowPlan = hasMainContent || Boolean(reasoningContent && !message.isStreaming);
+  
+  // Show thinking state when we have reasoning content but no main content yet
+  const isThinking = Boolean(reasoningContent && !hasMainContent && message.isStreaming);
   const handleAccept = useCallback(async () => {
     if (onSendMessage) {
       onSendMessage(
@@ -478,7 +487,7 @@ function PlanCard({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           <Card className="w-full">
             <CardHeader>
@@ -513,6 +522,15 @@ function PlanCard({
                     </li>
                   ))}
                 </ul>
+              )}
+              
+              {/* Show loading indication for streaming plans */}
+              {message.isStreaming && (!plan.steps || plan.steps.length === 0) && (
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="h-4 bg-muted rounded w-2/3" />
+                </div>
               )}
             </CardContent>
             <CardFooter className="flex justify-end">
