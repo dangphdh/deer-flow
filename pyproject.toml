@@ -35,6 +35,7 @@ dependencies = [
     "langchain-deepseek>=0.1.3",
     "playwright>=1.52.0",
     "volcengine>=1.0.191",
+    "websockets>=12.0",
 ]
 
 [project.optional-dependencies]

@@ -41,6 +41,8 @@ from src.server.rag_request import (
     RAGResourcesResponse,
 )
 from src.tools import VolcengineTTS
+# WebSocket streaming integration
+from src.streaming import setup_websocket_routes
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +62,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+# Setup WebSocket routes
+setup_websocket_routes(app)
 
 graph = build_graph_with_memory()
 
