@@ -1,0 +1,5 @@
+/* WebSocket Research Component Styles */
+
+.progress-bar-fill {
+  transition: width 300ms ease-in-out;
+}
