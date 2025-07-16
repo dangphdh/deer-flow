@@ -1,0 +1,455 @@
+/* ChatComponent.module.css */
+/* Copyright (c) 2025 Bytedance Ltd. and/or its affiliates */
+/* SPDX-License-Identifier: MIT */
+
+/* Main container styles */
+.chatContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Connection status bar */
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  transition: all 0.3s ease;
+}
+
+.connectionStatus.connected {
+  background-color: hsl(142, 76%, 96%);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.connectionStatus.connecting {
+  background-color: hsl(55, 92%, 95%);
+  border-color: rgba(234, 179, 8, 0.2);
+}
+
+.connectionStatus.disconnected {
+  background-color: hsl(0, 86%, 97%);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Dark mode connection status */
+@media (prefers-color-scheme: dark) {
+  .connectionStatus.connected {
+    background-color: rgba(34, 197, 94, 0.1);
+  }
+  
+  .connectionStatus.connecting {
+    background-color: rgba(234, 179, 8, 0.1);
+  }
+  
+  .connectionStatus.disconnected {
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+}
+
+/* Connection indicator dot */
+.connectionDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.connectionDot.connected {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.connectionDot.connecting {
+  background-color: #eab308;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+
+.connectionDot.disconnected {
+  background-color: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+  .connectionDot.disconnected {
+    background-color: #4b5563;
+  }
+}
+
+/* Connection status text */
+.connectionText {
+  transition: color 0.3s ease;
+  color: hsl(var(--muted-foreground));
+}
+
+.connectionText.connected {
+  color: #15803d;
+}
+
+.connectionText.connecting {
+  color: #a16207;
+}
+
+.connectionText.disconnected {
+  color: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  .connectionText.connected {
+    color: #4ade80;
+  }
+  
+  .connectionText.connecting {
+    color: #facc15;
+  }
+  
+  .connectionText.disconnected {
+    color: #9ca3af;
+  }
+}
+
+/* Error message styling */
+.errorMessage {
+  color: #dc2626;
+  font-size: 0.75rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  .errorMessage {
+    color: #f87171;
+  }
+}
+
+/* Main chat card */
+.chatCard {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  transition: all 0.3s ease;
+}
+
+.chatCard:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Message area */
+.messageArea {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Input area */
+.inputArea {
+  border-top: 1px solid hsl(var(--border));
+  padding: 1rem;
+  background: hsl(var(--card));
+}
+
+/* Loading overlay */
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  animation: fadeIn 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loadingOverlay {
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: hsl(var(--card));
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* WebSocket specific indicators */
+.websocketIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  background: hsla(var(--primary), 0.1);
+  color: hsl(var(--primary));
+  border: 1px solid hsla(var(--primary), 0.2);
+}
+
+.websocketIndicator.active {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Real-time message indicator */
+.realtimeMessage {
+  position: relative;
+}
+
+.realtimeMessage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    hsl(var(--primary)) 20%, 
+    hsl(var(--primary)) 80%, 
+    transparent 100%
+  );
+  animation: slideDown 0.6s ease-out;
+}
+
+/* Typing indicator */
+.typingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  animation: fadeIn 0.3s ease;
+}
+
+.typingDots {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.typingDot {
+  width: 0.25rem;
+  height: 0.25rem;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typingDot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typingDot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+/* Progress bar for streaming */
+.streamingProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: hsl(var(--primary));
+  width: 0%;
+  animation: streamProgress 3s ease-in-out infinite;
+}
+
+/* Connection quality indicator */
+.connectionQuality {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.qualityBar {
+  width: 0.25rem;
+  height: 0.75rem;
+  background: #d1d5db;
+  border-radius: 0.125rem;
+  transition: background-color 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .qualityBar {
+    background: #4b5563;
+  }
+}
+
+.qualityBar.excellent {
+  background: #22c55e;
+}
+
+.qualityBar.good {
+  background: #eab308;
+}
+
+.qualityBar.poor {
+  background: #ef4444;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .connectionStatus {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .inputArea {
+    padding: 0.75rem;
+  }
+  
+  .websocketIndicator {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .chatCard {
+    background: hsla(var(--card), 0.8);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  
+  .loadingOverlay {
+    background: rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes streamProgress {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+  50% {
+    width: 100%;
+    opacity: 0.8;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 4px hsla(var(--primary), 0.4);
+  }
+  to {
+    box-shadow: 0 0 12px hsla(var(--primary), 0.6);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .connectionDot.connected {
+    background: #00ff00;
+  }
+  
+  .connectionDot.connecting {
+    background: #ffff00;
+  }
+  
+  .connectionDot.disconnected {
+    background: #ff0000;
+  }
+  
+  .chatCard {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .connectionDot.connecting {
+    animation: none;
+  }
+  
+  .typingDot {
+    animation: none;
+  }
+}

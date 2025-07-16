@@ -1,0 +1,378 @@
+/* ResearchComponent.module.css */
+/* Copyright (c) 2025 Bytedance Ltd. and/or its affiliates */
+/* SPDX-License-Identifier: MIT */
+
+/* Main research container */
+.researchContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Real-time status bar */
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  border-bottom: 1px solid hsl(var(--border));
+  transition: all 0.3s ease;
+}
+
+/* Connection status indicator */
+.connectionIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.statusDot.connected {
+  background-color: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.statusDot.connecting {
+  background-color: #eab308;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.statusDot.disconnected {
+  background-color: #9ca3af;
+}
+
+@media (prefers-color-scheme: dark) {
+  .statusDot.disconnected {
+    background-color: #4b5563;
+  }
+}
+
+/* Progress indicator */
+.progressIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progressText {
+  font-size: 0.75rem;
+}
+
+.progressBar {
+  width: 4rem;
+  height: 0.25rem;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .progressBar {
+    background-color: #374151;
+  }
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+  border-radius: 9999px;
+}
+
+/* Error indicator */
+.errorText {
+  color: #dc2626;
+  font-size: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .errorText {
+    color: #f87171;
+  }
+}
+
+/* Main research content */
+.researchContent {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* No research state */
+.noResearchState {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.noResearchContent {
+  text-align: center;
+}
+
+.noResearchTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.noResearchDescription {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.5rem;
+}
+
+/* Initialization overlay */
+.initializationOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+@media (prefers-color-scheme: dark) {
+  .initializationOverlay {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.initializationContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.initializationText {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Real-time activity indicators */
+.activityIndicator {
+  position: relative;
+  animation: slideInFromRight 0.4s ease-out;
+}
+
+.activityIndicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    #3b82f6 20%, 
+    #3b82f6 80%, 
+    transparent 100%
+  );
+  animation: activityPulse 2s ease-in-out infinite;
+}
+
+/* Research stage indicator */
+.stageIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: hsla(var(--primary), 0.1);
+  color: hsl(var(--primary));
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  animation: fadeInScale 0.3s ease-out;
+}
+
+.stageIndicator.active {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Live update badge */
+.liveUpdateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  background: #22c55e;
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.liveUpdateBadge::before {
+  content: '';
+  width: 0.25rem;
+  height: 0.25rem;
+  background: currentColor;
+  border-radius: 50%;
+  animation: blink 1s ease-in-out infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .statusBar {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .progressIndicator {
+    gap: 0.25rem;
+  }
+  
+  .progressBar {
+    width: 3rem;
+  }
+  
+  .stageIndicator {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .noResearchState {
+    background: hsla(var(--card), 0.8);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 16px rgba(234, 179, 8, 0.6);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes activityPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 4px hsla(var(--primary), 0.4);
+  }
+  to {
+    box-shadow: 0 0 12px hsla(var(--primary), 0.6);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .statusDot.connected {
+    background: #00ff00;
+  }
+  
+  .statusDot.connecting {
+    background: #ffff00;
+  }
+  
+  .statusDot.disconnected {
+    background: #ff0000;
+  }
+  
+  .progressFill {
+    background: #0000ff;
+  }
+  
+  .liveUpdateBadge {
+    background: #00ff00;
+    color: #000000;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .statusDot.connecting {
+    animation: none;
+  }
+  
+  .liveUpdateBadge {
+    animation: none;
+  }
+  
+  .activityIndicator::after {
+    animation: none;
+  }
+}
