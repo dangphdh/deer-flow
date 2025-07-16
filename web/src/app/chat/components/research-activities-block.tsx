@@ -171,7 +171,7 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
             {searching &&
               [...Array(6)].map((_, i) => (
                 <li
-                  key={`search-result-${i}`}
+                  key={`skeleton-search-${i}`}
                   className="flex h-40 w-40 gap-2 rounded-md text-sm"
                 >
                   <Skeleton
@@ -184,7 +184,7 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
               .filter((result) => result.type === "page")
               .map((searchResult, i) => (
                 <MotionLi
-                  key={`search-result-${i}`}
+                  key={`page-result-${i}`}
                   className="text-muted-foreground bg-accent flex max-w-40 gap-2 rounded-md px-2 py-1 text-sm"
                   initial={{ opacity: 0, y: 10, scale: 0.66 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -206,7 +206,7 @@ function WebSearchToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
               ))}
             {imageResults.map((searchResult, i) => (
               <MotionLi
-                key={`search-result-${i}`}
+                key={`image-result-${i}`}
                 initial={{ opacity: 0, y: 10, scale: 0.66 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{
@@ -306,7 +306,7 @@ function RetrieverToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
             {searching &&
               [...Array(2)].map((_, i) => (
                 <li
-                  key={`search-result-${i}`}
+                  key={`skeleton-doc-${i}`}
                   className="flex h-40 w-40 gap-2 rounded-md text-sm"
                 >
                   <Skeleton
@@ -317,7 +317,7 @@ function RetrieverToolCall({ toolCall }: { toolCall: ToolCallRuntime }) {
               ))}
             {documents.map((doc, i) => (
               <MotionLi
-                key={`search-result-${i}`}
+                key={`doc-result-${i}`}
                 className="text-muted-foreground bg-accent flex max-w-40 gap-2 rounded-md px-2 py-1 text-sm"
                 initial={{ opacity: 0, y: 10, scale: 0.66 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}

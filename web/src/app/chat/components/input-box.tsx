@@ -178,7 +178,7 @@ export function InputBox({
                 {/* Floating sparkles */}
                 {[...Array(6)].map((_, i) => (
                   <motion.div
-                    key={i}
+                    key={`sparkle-1-${i}`}
                     className="absolute h-2 w-2 rounded-full bg-blue-400"
                     style={{
                       left: `${20 + i * 12}%`,
@@ -223,7 +223,7 @@ export function InputBox({
                 {/* Floating sparkles */}
                 {[...Array(6)].map((_, i) => (
                   <motion.div
-                    key={i}
+                    key={`sparkle-2-${i}`}
                     className="absolute h-2 w-2 rounded-full bg-blue-400"
                     style={{
                       left: `${20 + i * 12}%`,

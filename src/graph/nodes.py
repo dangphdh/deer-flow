@@ -117,6 +117,7 @@ def planner_node(
 
     # if the plan iterations is greater than the max plan iterations, return the reporter node
     if plan_iterations >= configurable.max_plan_iterations:
+        logger.warning(f"Plan iterations ({plan_iterations}) reached maximum limit ({configurable.max_plan_iterations}). Proceeding to reporter.")
         return Command(goto="reporter")
 
     full_response = ""
@@ -158,9 +159,14 @@ def planner_node(
 
 
 def human_feedback_node(
-    state,
+    state, config: RunnableConfig = None
 ) -> Command[Literal["planner", "research_team", "reporter", "__end__"]]:
     current_plan = state.get("current_plan", "")
+    plan_iterations = state["plan_iterations"] if state.get("plan_iterations", 0) else 0
+    
+    # Get configuration to check max plan iterations
+    configurable = Configuration.from_runnable_config(config)
+    
     # check if the plan is auto accepted
     auto_accepted_plan = state.get("auto_accepted_plan", False)
     if not auto_accepted_plan:
@@ -168,6 +174,17 @@ def human_feedback_node(
 
         # if the feedback is not accepted, return the planner node
         if feedback and str(feedback).upper().startswith("[EDIT_PLAN]"):
+            # Check if we've reached the maximum plan iterations before allowing re-planning
+            if plan_iterations >= configurable.max_plan_iterations:
+                logger.warning(f"Maximum plan iterations ({configurable.max_plan_iterations}) reached. Proceeding to reporter.")
+                # Increment iterations and go to reporter instead of allowing more planning
+                return Command(
+                    update={
+                        "plan_iterations": plan_iterations + 1,
+                    },
+                    goto="reporter",
+                )
+            
             return Command(
                 update={
                     "messages": [
@@ -182,7 +199,6 @@ def human_feedback_node(
             raise TypeError(f"Interrupt value of {feedback} is not supported.")
 
     # if the plan is accepted, run the following node
-    plan_iterations = state["plan_iterations"] if state.get("plan_iterations", 0) else 0
     goto = "research_team"
     try:
         current_plan = repair_json_output(current_plan)
@@ -194,7 +210,8 @@ def human_feedback_node(
             goto = "reporter"
     except json.JSONDecodeError:
         logger.warning("Planner response is not a valid JSON")
-        if plan_iterations > 1:  # the plan_iterations is increased before this check
+        # If plan iteration exceeds limit after increment, go to reporter
+        if plan_iterations > 0:  # Changed from > 1 to > 0 for consistency
             return Command(goto="reporter")
         else:
             return Command(goto="__end__")
@@ -368,7 +385,7 @@ async def _execute_agent_step(
         )
 
     # Invoke the agent
-    default_recursion_limit = 25
+    default_recursion_limit = 100
     try:
         env_value_str = os.getenv("AGENT_RECURSION_LIMIT", str(default_recursion_limit))
         parsed_limit = int(env_value_str)
