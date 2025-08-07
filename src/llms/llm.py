@@ -10,8 +10,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from langchain_deepseek import ChatDeepSeek
 from typing import get_args
-from langchain_deepseek import ChatDeepSeek
-from typing import get_args
 
 from src.config import load_yaml_config
 from src.config.agents import LLMType

@@ -173,9 +173,8 @@ DeerFlow supports multiple search engines that can be configured in your `.env` 
 To configure your preferred search engine, set the `SEARCH_API` variable in your `.env` file:
 
 ```bash
-# Choose one: tavily, duckduckgo, brave_search, arxiv, serper
-SEARCH_API=serper
-SERPER_API_KEY=your-serper-api-key
+# Choose one: tavily, duckduckgo, brave_search, arxiv
+SEARCH_API=tavily
 ```
 
 ### Private Knowledgebase
@@ -189,6 +188,7 @@ DeerFlow support private knowledgebase such as ragflow and vikingdb, so that you
    RAGFLOW_API_URL="http://localhost:9388"
    RAGFLOW_API_KEY="ragflow-xxx"
    RAGFLOW_RETRIEVAL_SIZE=10
+   RAGFLOW_CROSS_LANGUAGES=English,Chinese,Spanish,French,German,Japanese,Korean
    ```
 
 ## Features

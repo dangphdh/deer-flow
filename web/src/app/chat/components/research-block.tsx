@@ -58,61 +58,6 @@ export function ResearchBlock({
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const handleDownload = useCallback((format: 'markdown' | 'text' = 'markdown') => {
-    if (!reportId) {
-      return;
-    }
-    const report = useStore.getState().messages.get(reportId);
-    if (!report) {
-      return;
-    }
-    
-    let content = report.content;
-    let mimeType = 'text/markdown';
-    let extension = 'md';
-    
-    // Process content based on format
-    if (format === 'text') {
-      // Remove markdown formatting for plain text
-      content = content
-        .replace(/^#{1,6}\s+/gm, '') // Remove headers
-        .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
-        .replace(/\*(.*?)\*/g, '$1') // Remove italic
-        .replace(/`(.*?)`/g, '$1') // Remove inline code
-        .replace(/^\s*[-*+]\s+/gm, '• ') // Convert bullet points
-        .replace(/^\s*\d+\.\s+/gm, (match, offset, string) => {
-          const lineStart = string.lastIndexOf('\n', offset) + 1;
-          const lineNumber = string.substring(0, offset).split('\n').length;
-          return `${lineNumber - string.substring(0, lineStart).split('\n').length + 1}. `;
-        }) // Convert numbered lists
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
-        .replace(/```[\s\S]*?```/g, '') // Remove code blocks
-        .replace(/\n{3,}/g, '\n\n'); // Clean up extra newlines
-      
-      mimeType = 'text/plain';
-      extension = 'txt';
-    }
-    
-    // Create a blob with the report content
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    
-    // Create a temporary link element and trigger download
-    const link = document.createElement('a');
-    link.href = url;
-    
-    // Generate a filename based on the report content or use a default
-    const title = report.content.split('\n')[0]?.replace(/^#\s*/, '') ?? 'Research Report';
-    const sanitizedTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    link.download = `${sanitizedTitle}.${extension}`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Clean up the object URL
-    URL.revokeObjectURL(url);
-  }, [reportId]);
   const handleCopy = useCallback(() => {
     if (!reportId) {
       return;
@@ -127,6 +72,33 @@ export function ResearchBlock({
       setCopied(false);
     }, 1000);
   }, [reportId]);
+
+  // Download report as markdown
+  const handleDownload = useCallback(() => {
+    if (!reportId) {
+      return;
+    }
+    const report = useStore.getState().messages.get(reportId);
+    if (!report) {
+      return;
+    }
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    const filename = `research-report-${timestamp}.md`;
+    const blob = new Blob([report.content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
+  }, [reportId]);
+
     
   const handleEdit = useCallback(() => {
     setEditing((editing) => !editing);
@@ -182,7 +154,7 @@ export function ResearchBlock({
                   className="text-gray-400"
                   size="icon"
                   variant="ghost"
-                  onClick={() => handleDownload()}
+                  onClick={handleDownload}
                 >
                   <Download />
                 </Button>

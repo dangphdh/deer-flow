@@ -68,13 +68,9 @@ def background_investigation_node(state: State, config: RunnableConfig):
                 f"Tavily search returned malformed response: {searched_content}"
             )
     else:
-        try:
-            background_investigation_results = get_web_search_tool(
-                configurable.max_search_results
-            ).invoke(query)
-        except Exception as e:
-            logger.error(f"Web search tool failed: {e}")
-            background_investigation_results = f"[Web search error: {e}]"
+        background_investigation_results = get_web_search_tool(
+            configurable.max_search_results
+        ).invoke(query)
     return {
         "background_investigation_results": json.dumps(
             background_investigation_results, ensure_ascii=False
@@ -139,7 +135,7 @@ def planner_node(
             return Command(goto="reporter")
         else:
             return Command(goto="__end__")
-    if curr_plan.get("has_enough_context"):
+    if isinstance(curr_plan, dict) and curr_plan.get("has_enough_context"):
         logger.info("Planner response has enough context.")
         new_plan = Plan.model_validate(curr_plan)
         return Command(
@@ -206,12 +202,9 @@ def human_feedback_node(
         plan_iterations += 1
         # parse the plan
         new_plan = json.loads(current_plan)
-        if new_plan["has_enough_context"]:
-            goto = "reporter"
     except json.JSONDecodeError:
         logger.warning("Planner response is not a valid JSON")
-        # If plan iteration exceeds limit after increment, go to reporter
-        if plan_iterations > 0:  # Changed from > 1 to > 0 for consistency
+        if plan_iterations > 1:  # the plan_iterations is increased before this check
             return Command(goto="reporter")
         else:
             return Command(goto="__end__")
@@ -266,9 +259,12 @@ def coordinator_node(
             "Coordinator response contains no tool calls. Terminating workflow execution."
         )
         logger.debug(f"Coordinator response: {response}")
-
+    messages = state.get("messages", [])
+    if response.content:
+        messages.append(HumanMessage(content=response.content, name="coordinator"))
     return Command(
         update={
+            "messages": messages,
             "locale": locale,
             "research_topic": research_topic,
             "resources": configurable.resources,
@@ -327,6 +323,7 @@ async def _execute_agent_step(
 ) -> Command[Literal["research_team"]]:
     """Helper function to execute a step using the specified agent."""
     current_plan = state.get("current_plan")
+    plan_title = current_plan.title
     observations = state.get("observations", [])
 
     # Find the first unexecuted step
@@ -348,16 +345,16 @@ async def _execute_agent_step(
     # Format completed steps information
     completed_steps_info = ""
     if completed_steps:
-        completed_steps_info = "# Existing Research Findings\n\n"
+        completed_steps_info = "# Completed Research Steps\n\n"
         for i, step in enumerate(completed_steps):
-            completed_steps_info += f"## Existing Finding {i + 1}: {step.title}\n\n"
+            completed_steps_info += f"## Completed Step {i + 1}: {step.title}\n\n"
             completed_steps_info += f"<finding>\n{step.execution_res}\n</finding>\n\n"
 
     # Prepare the input for the agent with completed steps info
     agent_input = {
         "messages": [
             HumanMessage(
-                content=f"{completed_steps_info}# Current Task\n\n## Title\n\n{current_step.title}\n\n## Description\n\n{current_step.description}\n\n## Locale\n\n{state.get('locale', 'en-US')}"
+                content=f"# Research Topic\n\n{plan_title}\n\n{completed_steps_info}# Current Step\n\n## Title\n\n{current_step.title}\n\n## Description\n\n{current_step.description}\n\n## Locale\n\n{state.get('locale', 'en-US')}"
             )
         ]
     }

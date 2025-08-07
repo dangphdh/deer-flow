@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 from src.rag.retriever import Resource
 from src.config.report_style import ReportStyle
-from src.config.report_style import ReportStyle
 
 
 class ContentItem(BaseModel):

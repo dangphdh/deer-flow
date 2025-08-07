@@ -7,7 +7,7 @@
     "analyze": "ANALYZE=true next build",
     "build": "next build",
     "check": "next lint && tsc --noEmit",
-    "dev": "dotenv -e ../.env -- next dev --turbo",
+    "dev": "dotenv -f ../.env -- next dev --turbo",
     "scan": "next dev & npx react-scan@latest localhost:3000",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",

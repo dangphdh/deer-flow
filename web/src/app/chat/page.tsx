@@ -26,7 +26,7 @@ const Main = dynamic(() => import("./main"), {
 });
 
 export default function HomePage() {
-  const t = useTranslations("common");
+  const t = useTranslations("chat.page");
 
   return (
     <div className="flex h-screen w-screen justify-center overscroll-none">

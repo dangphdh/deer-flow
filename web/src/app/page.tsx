@@ -1,8 +1,6 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useMemo } from "react";
 
