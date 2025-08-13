@@ -476,8 +476,8 @@ async def _setup_and_execute_agent_step(
     if mcp_servers:
         client = MultiServerMCPClient(mcp_servers)
         loaded_tools = default_tools[:]
-        tools_from_client = await client.get_tools()
-        for tool in tools_from_client:
+        all_tools = await client.get_tools()
+        for tool in all_tools:
             if tool.name in enabled_tools:
                 tool.description = (
                     f"Powered by '{enabled_tools[tool.name]}'.\n{tool.description}"

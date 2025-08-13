@@ -197,7 +197,7 @@ DeerFlow support private knowledgebase such as ragflow and vikingdb, so that you
 
 - 🤖 **LLM Integration**
   - It supports the integration of most models through [litellm](https://docs.litellm.ai/docs/providers).
-  - Support for open source models like Qwen
+  - Support for open source models like Qwen, you need to read the [configuration](docs/configuration_guide.md) for more details.
   - OpenAI-compatible API interface
   - Multi-tier LLM system for different task complexities
 
@@ -406,7 +406,8 @@ Final, start up a docker container running the web server:
 
 ```bash
 # Replace deer-flow-api-app with your preferred container name
-docker run -d -t -p 8000:8000 --env-file .env --name deer-flow-api-app deer-flow-api
+# Start the server then bind to localhost:8000
+docker run -d -t -p 127.0.0.1:8000:8000 --env-file .env --name deer-flow-api-app deer-flow-api
 
 # stop the server
 docker stop deer-flow-api-app
@@ -423,6 +424,9 @@ docker compose build
 # start the server
 docker compose up
 ```
+
+> [!WARNING]
+> If you want to deploy the deer flow into production environments, please add authentication to the website and evaluate your security check of the MCPServer and Python Repl. 
 
 ## Examples
 
