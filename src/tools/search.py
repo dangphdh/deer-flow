@@ -29,7 +29,7 @@ from src.tools.decorators import create_logged_tool
 logger = logging.getLogger(__name__)
 
 # Create logged versions of the search tools
-LoggedTavilySearch = create_logged_tool(TavilySearchResultsWithImages)
+LoggedTavilySearch = create_logged_tool(TavilySearchWithImages)
 if os.getenv("SEARCH_API", "") == SearchEngine.TAVILY.value:
     tavily_search_tool = LoggedTavilySearch(
         name="web_search",
@@ -57,6 +57,7 @@ brave_search_tool = LoggedBraveSearch(
 
 LoggedArxivSearch = create_logged_tool(ArxivQueryRun)
 LoggedWikipediaSearch = create_logged_tool(WikipediaQueryRun)
+LoggedSerperSearch = create_logged_tool(SerperSearchTool)
 
 
 def get_search_config():

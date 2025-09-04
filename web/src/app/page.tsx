@@ -3,6 +3,8 @@
 
 import { useTranslations } from 'next-intl';
 import { useMemo } from "react";
+import dynamic from 'next/dynamic';
+import type { Metadata } from 'next';
 
 import { SiteHeader } from "./chat/components/site-header";
 import { Jumbotron } from "./landing/components/jumbotron";

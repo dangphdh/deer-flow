@@ -5,7 +5,7 @@
 
 if [ "$1" = "--dev" -o "$1" = "-d" -o "$1" = "dev" -o "$1" = "development" ]; then
   echo -e "Starting DeerFlow in [DEVELOPMENT] mode...\n"
-  nohup uv run server.py --reload --host 0.0.0.0 & SERVER_PID=$$! > output.log 2>&1
+  nohup uv run server.py --reload --host 0.0.0.0 --port 8001 & SERVER_PID=$$! > output.log 2>&1
   cd web && PORT=3001 pnpm dev & WEB_PID=$$!
   trap "kill $$SERVER_PID $$WEB_PID" SIGINT SIGTERM
   wait

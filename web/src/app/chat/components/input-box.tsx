@@ -207,7 +207,7 @@ export function InputBox({
             isEnhanceAnimating && "transition-all duration-500",
           )}
           ref={inputRef}
-          loading={loading}
+          // loading={loading}
           config={config}
           onEnter={handleSendMessage}
           onChange={setCurrentPrompt}
