@@ -20,7 +20,7 @@ from langchain_community.utilities import (
 from src.config import SearchEngine, SELECTED_SEARCH_ENGINE, SEARCH_MAX_RESULTS
 from src.config import load_yaml_config
 from src.tools.tavily_search.tavily_search_results_with_images import (
-    TavilySearchResultsWithImages,
+    TavilySearchWithImages,
 )
 from src.tools.serper_search import SerperSearchTool
 

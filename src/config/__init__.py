@@ -1,12 +1,13 @@
 # Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 # SPDX-License-Identifier: MIT
 
-from .loader import load_yaml_config
-from .tools import SELECTED_SEARCH_ENGINE, SearchEngine, SEARCH_MAX_RESULTS
-from .questions import BUILT_IN_QUESTIONS, BUILT_IN_QUESTIONS_ZH_CN
-
 from dotenv import load_dotenv
 
+from .loader import load_yaml_config
+
+from .questions import BUILT_IN_QUESTIONS, BUILT_IN_QUESTIONS_ZH_CN
+
+from .tools import SELECTED_SEARCH_ENGINE, SearchEngine, SEARCH_MAX_RESULTS
 # Load environment variables
 load_dotenv()
 
