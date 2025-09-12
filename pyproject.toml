@@ -39,6 +39,8 @@ dependencies = [
     "langgraph-checkpoint-postgres==2.0.21",
     "playwright>=1.52.0",
     "volcengine>=1.0.191",
+    "pymilvus>=2.3.0",
+    "langchain-milvus>=0.2.1",
     "psycopg[binary]>=3.2.9",
 ]
 
