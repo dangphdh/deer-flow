@@ -97,7 +97,30 @@ AGENT_LLM_MAP: dict[str, LLMType] = {
     "prompt_enhancer": "basic",
 }
 
+
+### How to use Google AI Studio models?
+
+DeerFlow supports native integration with Google AI Studio (formerly Google Generative AI) API. This provides direct access to Google's Gemini models with their full feature set and optimized performance.
+
+To use Google AI Studio models, you need to:
+1. Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Set the `platform` field to `"google_aistudio"` in your configuration
+3. Configure your model and API key
+
+The following is a configuration example for using Google AI Studio models:
+
+```yaml
+# Google AI Studio native API (recommended for Google models)
+BASIC_MODEL:
+  platform: "google_aistudio"
+  model: "gemini-2.5-flash"  # or "gemini-1.5-pro" ,...
+  api_key: YOUR_GOOGLE_API_KEY # Get from https://aistudio.google.com/app/apikey
+
 ```
+
+**Note:** The `platform: "google_aistudio"` field is required to distinguish from other providers that may offer Gemini models through OpenAI-compatible APIs.
+```
+
 ### How to use models with self-signed SSL certificates?
 
 If your LLM server uses self-signed SSL certificates, you can disable SSL certificate verification by adding the `verify_ssl: false` parameter to your model configuration:
@@ -165,7 +188,7 @@ DeerFlow allows you to control which domains are included or excluded in Tavily 
 
 `Tips`: it only supports Tavily currently. 
 
-You can configure domain filtering in your `conf.yaml` file as follows:
+You can configure domain filtering and search results in your `conf.yaml` file as follows:
 
 ```yaml
 SEARCH_ENGINE:
@@ -179,6 +202,12 @@ SEARCH_ENGINE:
   exclude_domains:
     - unreliable-site.com
     - spam-domain.net
+  # Include images in search results, default: true
+  include_images: false
+  # Include image descriptions in search results, default: true
+  include_image_descriptions: false
+  # Include raw content in search results, default: true
+  include_raw_content: false
 ```
 
 ## RAG (Retrieval-Augmented Generation) Configuration

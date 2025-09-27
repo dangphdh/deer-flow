@@ -14,6 +14,7 @@ class SearchEngine(enum.Enum):
     DUCKDUCKGO = "duckduckgo"
     BRAVE_SEARCH = "brave_search"
     ARXIV = "arxiv"
+    SEARX = "searx"
     WIKIPEDIA = "wikipedia"
     SERPER = "serper"
 
@@ -24,8 +25,10 @@ SEARCH_MAX_RESULTS = int(os.getenv("SEARCH_MAX_RESULTS", "10"))
 
 
 class RAGProvider(enum.Enum):
+    DIFY = "dify"
     RAGFLOW = "ragflow"
     VIKINGDB_KNOWLEDGE_BASE = "vikingdb_knowledge_base"
+    MOI = "moi"
     MILVUS = "milvus"
 
 
