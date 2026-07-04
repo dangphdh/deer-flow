@@ -1,8 +1,10 @@
 """Tests for ClarificationMiddleware, focusing on options type coercion."""
 
 import json
+from types import SimpleNamespace
 
 import pytest
+from langgraph.graph.message import add_messages
 
 from deerflow.agents.middlewares.clarification_middleware import ClarificationMiddleware
 
@@ -118,3 +120,138 @@ class TestFormatClarificationMessage:
         assert "2. 2" in result
         assert "3. True" in result
         assert "4. None" in result
+
+
+class TestClarificationCommandIdempotency:
+    """Clarification tool-call retries should not duplicate messages in state."""
+
+    def test_repeated_tool_call_uses_stable_message_id(self, middleware):
+        request = SimpleNamespace(
+            tool_call={
+                "name": "ask_clarification",
+                "id": "call-clarify-1",
+                "args": {
+                    "question": "Which environment should I use?",
+                    "clarification_type": "approach_choice",
+                    "options": ["dev", "prod"],
+                },
+            }
+        )
+
+        first = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+        second = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+
+        first_message = first.update["messages"][0]
+        second_message = second.update["messages"][0]
+
+        assert first_message.id == "clarification:call-clarify-1"
+        assert second_message.id == first_message.id
+        assert second_message.tool_call_id == first_message.tool_call_id
+
+        merged = add_messages(add_messages([], [first_message]), [second_message])
+
+        assert len(merged) == 1
+        assert merged[0].id == "clarification:call-clarify-1"
+        assert merged[0].content == first_message.content
+
+
+class TestClarificationDisabled:
+    """When ``disable_clarification`` is set in runtime context, a clarification
+    must NOT interrupt the run — it returns a ToolMessage nudging the agent to
+    proceed, so non-interactive channels (GitHub) don't dead-end."""
+
+    def _request(self, *, runtime_context):
+        return SimpleNamespace(
+            tool_call={
+                "name": "ask_clarification",
+                "id": "call-clarify-1",
+                "args": {"question": "Should I create the issue?", "clarification_type": "suggestion"},
+            },
+            runtime=SimpleNamespace(context=runtime_context),
+        )
+
+    def test_disabled_returns_toolmessage_not_command(self, middleware):
+        request = self._request(runtime_context={"disable_clarification": True})
+        result = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+        # Not a Command(goto=END) — a plain ToolMessage so the loop continues.
+        from langchain_core.messages import ToolMessage
+
+        assert isinstance(result, ToolMessage)
+        assert result.tool_call_id == "call-clarify-1"
+
+    def test_disabled_message_tells_agent_to_proceed(self, middleware):
+        request = self._request(runtime_context={"disable_clarification": True})
+        result = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+        assert "disabled" in result.content.lower()
+        assert "proceed" in result.content.lower()
+
+    def test_disabled_async_path(self, middleware):
+        request = self._request(runtime_context={"disable_clarification": True})
+
+        async def handler(_req):
+            return pytest.fail("handler should not be called")
+
+        import asyncio
+
+        result = asyncio.run(middleware.awrap_tool_call(request, handler))
+        from langchain_core.messages import ToolMessage
+
+        assert isinstance(result, ToolMessage)
+
+    def test_not_disabled_still_interrupts(self, middleware):
+        """Without the flag, the original goto=END behavior is preserved."""
+        from langgraph.types import Command
+
+        request = self._request(runtime_context={})  # no disable_clarification
+        result = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+        assert isinstance(result, Command)
+        assert result.goto == "__end__"
+
+    def test_no_runtime_context_still_interrupts(self, middleware):
+        """Defensive: missing runtime/context falls back to interrupting."""
+        from langgraph.types import Command
+
+        request = SimpleNamespace(
+            tool_call={
+                "name": "ask_clarification",
+                "id": "c1",
+                "args": {"question": "q?", "clarification_type": "missing_info"},
+            },
+            runtime=None,
+        )
+        result = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+        assert isinstance(result, Command)
+
+    def test_non_clarification_tool_call_unaffected_by_flag(self, middleware):
+        """The flag only affects ask_clarification; other tools run normally."""
+        other = SimpleNamespace(
+            tool_call={"name": "bash", "id": "b1", "args": {"command": "echo hi"}},
+            runtime=SimpleNamespace(context={"disable_clarification": True}),
+        )
+        sentinel = "ran"
+        result = middleware.wrap_tool_call(other, lambda _req: sentinel)
+        assert result == sentinel
+
+    def test_missing_tool_call_id_still_gets_stable_message_id(self, middleware):
+        request = SimpleNamespace(
+            tool_call={
+                "name": "ask_clarification",
+                "args": {
+                    "question": "Which environment should I use?",
+                    "clarification_type": "missing_info",
+                },
+            }
+        )
+
+        first = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+        second = middleware.wrap_tool_call(request, lambda _req: pytest.fail("handler should not be called"))
+
+        first_message = first.update["messages"][0]
+        second_message = second.update["messages"][0]
+
+        assert first_message.id.startswith("clarification:")
+        assert second_message.id == first_message.id
+
+        merged = add_messages(add_messages([], [first_message]), [second_message])
+
+        assert len(merged) == 1
