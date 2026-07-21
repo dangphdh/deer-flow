@@ -40,6 +40,10 @@ export interface Translations {
     exportAsJSON: string;
     exportSuccess: string;
     regenerate: string;
+    branch: string;
+    showArtifacts: string;
+    browser: string;
+    showBrowser: string;
   };
 
   home: {
@@ -71,11 +75,50 @@ export interface Translations {
     copiedReference: (title: string) => string;
   };
 
+  // Workspace Changes
+  workspaceChanges: {
+    title: string;
+    editedTitle: (count: number) => string;
+    badge: (count: number, additions: number, deletions: number) => string;
+    viewChanges: string;
+    created: string;
+    modified: string;
+    deleted: string;
+    openFile: string;
+    loading: string;
+    noChanges: string;
+    diffUnavailable: string;
+    binaryUnavailable: string;
+    largeUnavailable: string;
+    sensitiveUnavailable: string;
+    truncatedUnavailable: string;
+    symlinkUnavailable: string;
+    truncatedSummary: string;
+  };
+
   // Input Box
   inputBox: {
     placeholder: string;
     createSkillPrompt: string;
     addAttachments: string;
+    inputPolish: string;
+    inputPolishing: string;
+    inputPolishNoChanges: string;
+    inputPolishFailed: string;
+    inputPolishUndo: string;
+    inputPolishCancel: string;
+    voiceInputStartLabel: string;
+    voiceInputStopLabel: string;
+    voiceInputStart: string;
+    voiceInputStop: string;
+    voiceInputListening: string;
+    voiceInputUnsupported: string;
+    voiceInputPermissionDenied: string;
+    voiceInputMicrophoneUnavailable: string;
+    voiceInputUnsupportedLanguage: string;
+    voiceInputNetworkError: string;
+    voiceInputNoSpeech: string;
+    voiceInputFailed: string;
     mode: string;
     flashMode: string;
     flashModeDescription: string;
@@ -104,6 +147,7 @@ export interface Translations {
     followupConfirmReplace: string;
     suggestionPlaceholderRequired: string;
     goalCommandDescription: string;
+    compactCommandDescription: string;
     goalLabel: string;
     goalContinuing: string;
     goalContinuationTooltip: string;
@@ -112,6 +156,11 @@ export interface Translations {
     goalNone: string;
     goalActive: string;
     goalFailed: string;
+    goalTooLong: string;
+    goalLengthCounter: string;
+    compactSuccess: string;
+    compactSkipped: string;
+    compactFailed: string;
     suggestions: {
       suggestion: string;
       prompt: string;
@@ -323,6 +372,8 @@ export interface Translations {
   conversation: {
     noMessages: string;
     startConversation: string;
+    branchCreated: string;
+    branchFailed: string;
   };
 
   // Chats
@@ -338,6 +389,10 @@ export interface Translations {
     title: string;
     open: string;
     close: string;
+    delete: string;
+    deleteConfirm: string;
+    deleteSuccess: string;
+    deleteFailed: string;
     addToConversation: string;
     askInSideChat: string;
     reference: string;
@@ -406,6 +461,26 @@ export interface Translations {
     clickToViewContent: string;
     writeTodos: string;
     skillInstallTooltip: string;
+    browserNavigate: (url: string) => string;
+    browserNavigateGeneric: string;
+    browserClick: string;
+    browserType: string;
+    browserSnapshot: string;
+    browserGetText: string;
+    browserBack: string;
+    browserScreenshot: string;
+    browserClose: string;
+  };
+
+  humanInput: {
+    answered: string;
+    pending: string;
+    readOnly: string;
+    otherLabel: string;
+    otherPlaceholder: string;
+    submit: string;
+    emptyError: string;
+    answeredValue: (value: string) => string;
   };
 
   // Uploads
@@ -441,6 +516,7 @@ export interface Translations {
     view: string;
     unavailable: string;
     unavailableShort: string;
+    collecting: string;
     note: string;
     presets: {
       off: string;
@@ -640,6 +716,8 @@ export interface Translations {
     emailPlaceholder: string;
     password: string;
     passwordPlaceholder: string;
+    rememberMe: string;
+    rememberMeDescription: string;
     pleaseWait: string;
     signIn: string;
     createAccount: string;

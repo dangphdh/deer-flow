@@ -5,6 +5,8 @@ import {
   extractContentFromMessage,
   extractTextFromMessage,
   extractReasoningContentFromMessage,
+  getBranchableAssistantGroupIds,
+  getMessageCopyData,
   getAssistantTurnCopyData,
   getAssistantTurnUsageMessages,
   getMessageGroups,
@@ -79,6 +81,54 @@ test("aggregates token usage messages once per assistant turn", () => {
       (groupMessages) => groupMessages?.map((message) => message.id) ?? null,
     ),
   ).toEqual([null, null, ["ai-1", "ai-2"], null, ["ai-3"]]);
+});
+
+describe("branchable assistant groups", () => {
+  const messages = [
+    { id: "human-1", type: "human", content: "First question" },
+    { id: "ai-history", type: "ai", content: "Historical final answer" },
+    { id: "human-2", type: "human", content: "Complex question" },
+    { id: "ai-intermediate", type: "ai", content: "Intermediate answer" },
+    {
+      id: "ai-tool",
+      type: "ai",
+      content: "",
+      tool_calls: [{ id: "tool-1", name: "write_todos", args: {} }],
+    },
+    {
+      id: "tool-result",
+      type: "tool",
+      name: "write_todos",
+      tool_call_id: "tool-1",
+      content: "Todos updated",
+    },
+    { id: "ai-final", type: "ai", content: "Final answer" },
+  ] as Message[];
+
+  test("keeps historical turns branchable and selects only the final AI group in the current completed turn", () => {
+    const groups = getMessageGroups(messages);
+
+    expect([...getBranchableAssistantGroupIds(groups, false)]).toEqual([
+      "ai-history",
+      "ai-final",
+    ]);
+  });
+
+  test("does not expose the current turn while it is still loading", () => {
+    const groups = getMessageGroups(messages);
+
+    expect([...getBranchableAssistantGroupIds(groups, true)]).toEqual([
+      "ai-history",
+    ]);
+  });
+
+  test("does not expose a completed turn that ends in processing", () => {
+    const groups = getMessageGroups(messages.slice(0, -1));
+
+    expect([...getBranchableAssistantGroupIds(groups, false)]).toEqual([
+      "ai-history",
+    ]);
+  });
 });
 
 test("reasoning + content (no tool calls) yields a single assistant bubble, not a duplicate processing group", () => {
@@ -246,6 +296,17 @@ describe("inline <think> tag splitting", () => {
 });
 
 describe("human message internal context stripping", () => {
+  test("strips uploaded file context from copy data", () => {
+    const message = {
+      id: "human-with-upload",
+      type: "human",
+      content:
+        "<uploaded_files>\nThe following files were uploaded in this message:\n\n- paper.pdf (1.0 MB)\n  Path: /mnt/user-data/uploads/paper.pdf\n</uploaded_files>\n\nSummarize this paper",
+    } as Message;
+
+    expect(getMessageCopyData(message)).toBe("Summarize this paper");
+  });
+
   test("strips slash skill activation context from display content", () => {
     const content =
       "<slash_skill_activation>\n<skill_content># Secret SKILL.md</skill_content>\n</slash_skill_activation>\nreal user task";
