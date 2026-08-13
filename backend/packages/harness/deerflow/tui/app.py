@@ -20,6 +20,7 @@ from textual.widgets.option_list import Option
 
 from deerflow.runtime.goal import parse_goal_command
 
+from .command_registry import format_command_help
 from .input_history import InputHistory
 from .render import render_header, render_status, render_transcript
 from .runtime import stream_actions
@@ -36,7 +37,22 @@ from .view_state import (
 )
 from .widgets.composer import ComposerInput
 
-_HELP_TEXT = "Commands:  /new  /clear  /threads  /goal  /model  /skills  /tools  /mcp  /memory  /usage  /config  /quit\nKeys:  Enter send · Ctrl+C interrupt or quit · Ctrl+L redraw · / commands · Esc close overlay"
+_HELP_KEYS = "Keys:  Enter send · Ctrl+C interrupt or quit · Ctrl+L redraw · / commands · Esc close overlay"
+_HELP_TEXT = f"{format_command_help()}\n{_HELP_KEYS}"
+
+
+_TRANSPARENT_CSS = """
+Screen,
+#header,
+#scroll,
+#status,
+#palette,
+#composer,
+SelectScreen #dialog,
+SelectScreen OptionList {
+    background: ansi_default;
+}
+"""
 
 
 class SelectScreen(ModalScreen):
@@ -156,7 +172,10 @@ class DeerFlowTUI(App):
     ]
 
     def __init__(self, session, plan) -> None:
-        super().__init__()
+        transparent = bool(getattr(plan, "transparent", False))
+        if transparent:
+            self.CSS = f"{self.CSS}\n{_TRANSPARENT_CSS}"
+        super().__init__(ansi_color=True if transparent else None)
         self.session = session
         self.plan = plan
         self.state = initial_state()
