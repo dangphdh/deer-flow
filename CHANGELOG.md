@@ -327,6 +327,17 @@ This release closes that milestone with **181 merged pull requests**.
 
 ### Fixed
 
+- **doctor:** `make doctor` now checks the config file the Gateway actually
+  loads. It always inspected `<checkout>/config.yaml` and ignored
+  `DEER_FLOW_CONFIG_PATH` and `DEER_FLOW_PROJECT_ROOT`, so a missing override
+  that stops the Gateway from starting still reported `✓ config.yaml found`
+  and `✓ config.yaml loadable`, and a valid override pointing elsewhere got
+  the wrong file checked. Doctor now resolves the path through the harness's
+  own resolver and hands it the location variables the way `make dev` does:
+  `.env` values override the shell (expanding an unquoted leading `~`), and
+  an unset or empty `DEER_FLOW_PROJECT_ROOT` becomes the checkout. An override
+  the Gateway would reject fails `config.yaml found` with the Gateway's
+  error, and the config checks skip. ([#5987])
 - **database:** `DatabaseConfig` now validates `pool_size`, `pool_recycle`, and
   `command_timeout` strictly. Previously, YAML booleans (`true`/`false`) were
   coerced to `1`/`0` respectively, allowing `pool_size: true` (pool size 1) and
@@ -6214,4 +6225,5 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#5964]: https://github.com/bytedance/deer-flow/pull/5964
 [#5981]: https://github.com/bytedance/deer-flow/pull/5981
 [#5982]: https://github.com/bytedance/deer-flow/pull/5982
+[#5987]: https://github.com/bytedance/deer-flow/pull/5987
 
