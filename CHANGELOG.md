@@ -327,6 +327,18 @@ This release closes that milestone with **181 merged pull requests**.
 
 ### Fixed
 
+- **config:** `make config-upgrade` (also run by `make dev` / `make start`)
+  upgrades the `config.yaml` the Gateway loads. With both
+  `<checkout>/config.yaml` and `backend/config.yaml` present, the script
+  upgraded the `backend/` copy while the Gateway read the checkout copy, so the
+  file in use stayed outdated even though the upgrade reported success. It also
+  ignored `DEER_FLOW_PROJECT_ROOT` and a `DEER_FLOW_CONFIG_PATH` set in `.env`,
+  and fell back to another file when `DEER_FLOW_CONFIG_PATH` named a missing
+  one. The script now asks the harness resolver
+  (`AppConfig.resolve_config_path`) for the file, and a missing
+  `DEER_FLOW_CONFIG_PATH` or invalid `DEER_FLOW_PROJECT_ROOT` fails with the
+  Gateway's error instead of upgrading a fallback. ([#5991])
+
 - **sandbox:** Unwrap `Overwrite`-wrapped sandbox state in
   `ToolOutputBudgetMiddleware` and `ReadBeforeWriteMiddleware`. In delta
   checkpoint mode, forked or restored threads deliver the `sandbox` channel
@@ -6233,5 +6245,6 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#5981]: https://github.com/bytedance/deer-flow/pull/5981
 [#5982]: https://github.com/bytedance/deer-flow/pull/5982
 [#5987]: https://github.com/bytedance/deer-flow/pull/5987
+[#5991]: https://github.com/bytedance/deer-flow/pull/5991
 [#6015]: https://github.com/bytedance/deer-flow/pull/6015
 

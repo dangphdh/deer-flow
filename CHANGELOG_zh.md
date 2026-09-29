@@ -332,6 +332,17 @@
 
 ### 修复
 
+- **配置：** `make config-upgrade`（`make dev` / `make start` 也会执行）现在升级的是
+  Gateway 实际加载的 `config.yaml`。当 `<checkout>/config.yaml` 与
+  `backend/config.yaml` 同时存在时，脚本升级的是 `backend/` 下的副本，而 Gateway
+  读取的是 checkout 根目录的副本，因此实际使用的文件仍停留在旧版本，升级却显示
+  成功。脚本还会忽略 `DEER_FLOW_PROJECT_ROOT` 以及 `.env` 中设置的
+  `DEER_FLOW_CONFIG_PATH`，并在 `DEER_FLOW_CONFIG_PATH` 指向不存在的文件时退回到
+  其他文件。现在脚本通过 harness 的解析器
+  （`AppConfig.resolve_config_path`）确定文件；`DEER_FLOW_CONFIG_PATH` 不存在或
+  `DEER_FLOW_PROJECT_ROOT` 无效时，会以 Gateway 相同的错误失败，而不是升级
+  回退文件。([#5991])
+
 - **沙箱：** 在中间件（`ToolOutputBudgetMiddleware` 与 `ReadBeforeWriteMiddleware`）
   中解包 `Overwrite` 包装的沙箱状态。在 delta checkpoint 模式下，分叉或回滚
   的对话交付的 `sandbox` 通道状态会被 LangGraph 的 `Overwrite` 包装。此前直接判断
@@ -5287,4 +5298,5 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#5981]: https://github.com/bytedance/deer-flow/pull/5981
 [#5982]: https://github.com/bytedance/deer-flow/pull/5982
 [#5987]: https://github.com/bytedance/deer-flow/pull/5987
+[#5991]: https://github.com/bytedance/deer-flow/pull/5991
 [#6015]: https://github.com/bytedance/deer-flow/pull/6015
