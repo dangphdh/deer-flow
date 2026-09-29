@@ -327,6 +327,13 @@ This release closes that milestone with **181 merged pull requests**.
 
 ### Fixed
 
+- **sandbox:** Unwrap `Overwrite`-wrapped sandbox state in
+  `ToolOutputBudgetMiddleware` and `ReadBeforeWriteMiddleware`. In delta
+  checkpoint mode, forked or restored threads deliver the `sandbox` channel
+  wrapped in LangGraph's `Overwrite`. Without unwrapping,
+  `isinstance(sandbox_state, dict)` returned `False`, causing large tool output
+  externalization to fail and fall back to inline truncation, and
+  read-before-write lock scoping to miss the active sandbox ID. ([#6051])
 - **doctor:** `make doctor` now checks the config file the Gateway actually
   loads. It always inspected `<checkout>/config.yaml` and ignored
   `DEER_FLOW_CONFIG_PATH` and `DEER_FLOW_PROJECT_ROOT`, so a missing override
@@ -6226,4 +6233,5 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#5981]: https://github.com/bytedance/deer-flow/pull/5981
 [#5982]: https://github.com/bytedance/deer-flow/pull/5982
 [#5987]: https://github.com/bytedance/deer-flow/pull/5987
+[#6015]: https://github.com/bytedance/deer-flow/pull/6015
 

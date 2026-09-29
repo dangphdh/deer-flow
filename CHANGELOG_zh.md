@@ -332,6 +332,11 @@
 
 ### 修复
 
+- **沙箱：** 在中间件（`ToolOutputBudgetMiddleware` 与 `ReadBeforeWriteMiddleware`）
+  中解包 `Overwrite` 包装的沙箱状态。在 delta checkpoint 模式下，分叉或回滚
+  的对话交付的 `sandbox` 通道状态会被 LangGraph 的 `Overwrite` 包装。此前直接判断
+  `isinstance(sandbox_state, dict)` 会返回 `False`，导致大工具输出无法外部化到沙箱而退化为内联
+  硬截断，以及写前读锁作用域丢失有效沙箱 ID。([#6015])
 - **doctor：** `make doctor` 现在检查 Gateway 实际加载的配置文件。此前它
   固定检查 `<checkout>/config.yaml`，忽略 `DEER_FLOW_CONFIG_PATH` 与
   `DEER_FLOW_PROJECT_ROOT`：指向不存在路径、会让 Gateway 无法启动的覆盖值仍会
@@ -5282,3 +5287,4 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#5981]: https://github.com/bytedance/deer-flow/pull/5981
 [#5982]: https://github.com/bytedance/deer-flow/pull/5982
 [#5987]: https://github.com/bytedance/deer-flow/pull/5987
+[#6015]: https://github.com/bytedance/deer-flow/pull/6015
