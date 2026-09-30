@@ -332,6 +332,11 @@
 
 ### 修复
 
+- **智能体：** 上下文压缩的 fraction 触发器与 fraction 保留量现在使用当前运行
+  模型的上下文 profile；单独配置的 `summarization.model_name` 只负责生成摘要。
+  这避免运行模型与摘要模型的窗口不一致时压缩过晚或过早。中间件发布身份现在
+  分别记录 `profile_model` 与 `summary_model`，任一归属变化都会有意刷新该身份。
+  ([#5566])
 - **事件：** 在 JSONL 后端上，按 run 读取时，若 run ID 无法用作文件名，不再返回
   500。`GET /api/threads/{thread_id}/runs/{run_id}/events`、`.../messages` 与
   `.../workspace-changes` 会把 URL 中的 run ID 原样传给事件存储；在
@@ -5171,6 +5176,7 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#5562]: https://github.com/bytedance/deer-flow/pull/5562
 [#5563]: https://github.com/bytedance/deer-flow/pull/5563
 [#5564]: https://github.com/bytedance/deer-flow/pull/5564
+[#5566]: https://github.com/bytedance/deer-flow/pull/5566
 [#5567]: https://github.com/bytedance/deer-flow/pull/5567
 [#5569]: https://github.com/bytedance/deer-flow/pull/5569
 [#5570]: https://github.com/bytedance/deer-flow/pull/5570

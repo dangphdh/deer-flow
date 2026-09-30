@@ -327,6 +327,12 @@ This release closes that milestone with **181 merged pull requests**.
 
 ### Fixed
 
+- **agents:** Context-compaction fraction triggers and fraction-based retention
+  now use the active run model's context profile; a separate
+  `summarization.model_name` remains generation-only. This prevents mismatched
+  run and summary windows from compacting too late or too early. The middleware
+  release identity now records `profile_model` separately from `summary_model`,
+  intentionally refreshing the identity when either owner changes. ([#5566])
 - **events:** Run-scoped reads no longer return 500 on the JSONL backend for a
   run ID it cannot use as a filename. `GET
   /api/threads/{thread_id}/runs/{run_id}/events`, `.../messages`, and
@@ -6125,6 +6131,7 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#5562]: https://github.com/bytedance/deer-flow/pull/5562
 [#5563]: https://github.com/bytedance/deer-flow/pull/5563
 [#5564]: https://github.com/bytedance/deer-flow/pull/5564
+[#5566]: https://github.com/bytedance/deer-flow/pull/5566
 [#5567]: https://github.com/bytedance/deer-flow/pull/5567
 [#5569]: https://github.com/bytedance/deer-flow/pull/5569
 [#5570]: https://github.com/bytedance/deer-flow/pull/5570
