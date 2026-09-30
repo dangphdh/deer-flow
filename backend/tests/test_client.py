@@ -25,7 +25,7 @@ from app.gateway.routers.threads import ThreadGoalResponse
 from app.gateway.routers.uploads import UploadResponse
 from deerflow.agents.middlewares.view_image_middleware import ViewImageMiddleware
 from deerflow.agents.thread_state import DeltaThreadState, ThreadState
-from deerflow.client import DeerFlowClient
+from deerflow.client import DeerFlowClient, StreamEvent
 from deerflow.config.agents_config import AgentConfig
 from deerflow.config.authorization_config import AuthorizationConfig, AuthorizationProviderConfig
 from deerflow.config.extensions_config import ExtensionsConfig, McpServerConfig
@@ -753,6 +753,32 @@ class TestStream:
         assert any(event.data.get("additional_kwargs", {}).get("token_usage_attribution", {}).get("kind") == "final_answer" for event in ai_events)
 
     @pytest.mark.parametrize("streamed", [True, False])
+    def test_stream_carries_llm_error_fallback_flag_to_headless_cli(self, client, streamed):
+        """``deerflow --print`` / ``--json`` read the fallback flag from stream events to exit non-zero."""
+        from deerflow.tui.cli import _RunOutcome
+
+        fallback = AIMessage(
+            content="The configured LLM provider rejected the request because authentication or access is invalid.",
+            id="ai-1",
+            additional_kwargs={"deerflow_error_fallback": True, "error_type": "AuthenticationError", "error_reason": "auth"},
+        )
+        chunks = [("values", {"messages": [HumanMessage(content="hi", id="h-1"), fallback]})]
+        if streamed:
+            chunks.insert(0, ("messages", (AIMessageChunk(content=fallback.content, id="ai-1"), {})))
+        agent = _make_agent_mock(chunks)
+
+        with (
+            patch.object(client, "_ensure_agent"),
+            patch.object(client, "_agent", agent),
+        ):
+            outcome = _RunOutcome()
+            for event in client.stream("hi", thread_id="t-stream-fallback"):
+                outcome.observe(event)
+
+        assert outcome.answer() == fallback.content
+        assert outcome.error_text() == "LLM request failed (error_type=AuthenticationError, error_reason=auth)"
+
+    @pytest.mark.parametrize("streamed", [True, False])
     def test_stream_emits_text_a_later_node_appends_to_a_sent_ai_message(self, client, streamed):
         """A guard's ``after_model`` replaces the message under the same id after it was sent."""
         call = {"name": "bash", "args": {"command": "ls"}, "id": "call-1"}
@@ -1224,6 +1250,54 @@ class TestStream:
 
 
 class TestChat:
+    @pytest.mark.parametrize(
+        ("events", "expected"),
+        [
+            pytest.param(
+                [
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "draft", "content": "draft"}),
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "answer", "content": "fi"}),
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "draft", "content": " revised"}),
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "answer", "content": "nal"}),
+                    StreamEvent(type="messages-tuple", data={"type": "tool", "id": "tool", "content": "ignored"}),
+                    StreamEvent(type="values", data={"messages": [{"type": "ai", "content": "ignored"}]}),
+                ],
+                "final",
+                id="interleaved-message-ids",
+            ),
+            pytest.param(
+                [
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "answer", "content": "answer"}),
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "empty", "content": "", "additional_kwargs": {"reasoning_content": "thinking"}}),
+                    StreamEvent(type="end"),
+                ],
+                "answer",
+                id="metadata-only-message",
+            ),
+            pytest.param(
+                [
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "content": "no"}),
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": None, "content": " id"}),
+                    StreamEvent(type="messages-tuple", data={"type": "ai", "id": "", "content": " answer"}),
+                ],
+                "no id answer",
+                id="missing-message-id",
+            ),
+            pytest.param([StreamEvent(type="messages-tuple", data={"type": "ai", "id": "empty", "content": ""})], "", id="no-ai-text"),
+        ],
+    )
+    def test_headless_and_chat_share_final_answer_selection(self, client, events, expected):
+        """The CLI and chat must agree on interleaved deltas and metadata-only events."""
+        from deerflow.tui.cli import _RunOutcome
+
+        with patch.object(client, "stream", return_value=iter(events)):
+            assert client.chat("q", thread_id="t-shared-answer") == expected
+
+        outcome = _RunOutcome()
+        for event in events:
+            outcome.observe(event)
+        assert outcome.answer() == expected
+
     def test_returns_last_message(self, client):
         """chat() returns the last AI message text."""
         ai1 = AIMessage(content="thinking...", id="ai-1")
