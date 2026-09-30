@@ -332,6 +332,10 @@
 
 ### 修复
 
+- **调度器：** 固定小时的 cron 任务在夏令时回退（DST fall-back）当天不再重复运行两次。
+  `croniter` 会返回模糊本地时间的两个实例（首个为 `fold=0`，第二个为 `fold=1`）。
+  对于分和时字段不包含通配符的固定任务，现在会跳过第二个重复实例（`fold=1`），保持每天只运行一次
+  的契约（Vixie cron 规范），同时通配符计划（如 `0 * * * *`）仍会在重复的小时内每小时正常触发。（Issue #6052, [#6066]）
 - **持久化：** SQLite `checkpointer.connection_string` 若写成 `file:` URI，现在会在
   启动时报错，而不是悄悄写到别处。LangGraph 的 SQLite checkpointer 与 Store 打开
   连接串时未传 `uri=True`，SQLite 会把 URI 当作字面文件名：
@@ -5310,4 +5314,5 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#5987]: https://github.com/bytedance/deer-flow/pull/5987
 [#5991]: https://github.com/bytedance/deer-flow/pull/5991
 [#6015]: https://github.com/bytedance/deer-flow/pull/6015
+[#6066]: https://github.com/bytedance/deer-flow/pull/6066
 [#6069]: https://github.com/bytedance/deer-flow/pull/6069
