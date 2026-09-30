@@ -332,6 +332,12 @@
 
 ### 修复
 
+- **事件：** 在 JSONL 后端上，按 run 读取时，若 run ID 无法用作文件名，不再返回
+  500。`GET /api/threads/{thread_id}/runs/{run_id}/events`、`.../messages` 与
+  `.../workspace-changes` 会把 URL 中的 run ID 原样传给事件存储；在
+  `run_events.backend: jsonl` 下，`run.1` 这类 ID 会抛出 `ValueError`，而内存与
+  数据库存储返回空结果。现在 JSONL 的读取与删除把这类 ID 视为不存在的 run，写入
+  仍会拒绝它。([#6070])
 - **调度器：** 固定小时的 cron 任务在夏令时回退（DST fall-back）当天不再重复运行两次。
   `croniter` 会返回模糊本地时间的两个实例（首个为 `fold=0`，第二个为 `fold=1`）。
   对于分和时字段不包含通配符的固定任务，现在会跳过第二个重复实例（`fold=1`），保持每天只运行一次
@@ -5316,3 +5322,4 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#6015]: https://github.com/bytedance/deer-flow/pull/6015
 [#6066]: https://github.com/bytedance/deer-flow/pull/6066
 [#6069]: https://github.com/bytedance/deer-flow/pull/6069
+[#6070]: https://github.com/bytedance/deer-flow/pull/6070

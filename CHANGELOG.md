@@ -327,6 +327,14 @@ This release closes that milestone with **181 merged pull requests**.
 
 ### Fixed
 
+- **events:** Run-scoped reads no longer return 500 on the JSONL backend for a
+  run ID it cannot use as a filename. `GET
+  /api/threads/{thread_id}/runs/{run_id}/events`, `.../messages`, and
+  `.../workspace-changes` pass the URL's run ID to the event store unchecked;
+  with `run_events.backend: jsonl` an ID such as `run.1` raised `ValueError`,
+  while the memory and database stores return an empty result. JSONL reads and
+  deletes now treat such an ID as an unknown run; writes still reject it.
+  ([#6070])
 - **scheduler:** Fixed-hour cron tasks no longer fire twice on the daylight-saving
   fall-back day. `croniter` returns both occurrences of an ambiguous wall-clock
   hour (the first with `fold=0`, the second with `fold=1`). For tasks where
@@ -6268,4 +6276,5 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6015]: https://github.com/bytedance/deer-flow/pull/6015
 [#6066]: https://github.com/bytedance/deer-flow/pull/6066
 [#6069]: https://github.com/bytedance/deer-flow/pull/6069
+[#6070]: https://github.com/bytedance/deer-flow/pull/6070
 
