@@ -460,6 +460,14 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Fixed
 
+- **channels:** The Discord typing indicator is now actually sent while the
+  agent works on a reply. `_start_typing()` called `channel.trigger_typing()`, which
+  discord.py removed in 2.0 (the project requires `>=2.7.0`), and its loop
+  swallowed every exception, so each tick raised `AttributeError` and nothing
+  was ever sent. It now awaits `channel.typing()`, the 2.x API that sends one
+  indicator. A typing loop's first failed tick is logged at WARNING (a missing
+  permission or sustained rate limiting is visible at the default level) and
+  later ticks at DEBUG, instead of being dropped. ([#6138])
 - **community:** The SSRF URL guard no longer stalls the Gateway event loop
   while it resolves a hostname. `validate_public_http_url` resolves with
   blocking `socket.getaddrinfo`, and the crawl4ai and Browserless `web_fetch`,
@@ -7575,5 +7583,6 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6132]: https://github.com/bytedance/deer-flow/pull/6132
 [#6134]: https://github.com/bytedance/deer-flow/pull/6134
 [#6135]: https://github.com/bytedance/deer-flow/pull/6135
+[#6138]: https://github.com/bytedance/deer-flow/pull/6138
 [#6140]: https://github.com/bytedance/deer-flow/pull/6140
 

@@ -419,6 +419,11 @@
 
 ### 修复
 
+- **渠道：** Discord 现在会在智能体生成回复期间真正显示"正在输入"提示。`_start_typing()` 调用的
+  `channel.trigger_typing()` 已在 discord.py 2.0 中移除（项目要求 `>=2.7.0`），而其循环吞掉了
+  所有异常，因此每次都抛出 `AttributeError`，提示从未发送。现在改为 await 2.x 的
+  `channel.typing()` 发送一次提示。每个输入提示循环的首次失败以 WARNING 级别记录（缺少权限或持续限流
+  在默认日志级别下即可见），之后的失败以 DEBUG 级别记录，而不是直接丢弃。([#6138])
 - **社区工具：** SSRF URL 校验在解析主机名时不再阻塞 Gateway 事件循环。
   `validate_public_http_url` 通过阻塞的 `socket.getaddrinfo` 解析主机名，而
   crawl4ai 与 Browserless 的 `web_fetch`、`web_capture`、`browser_navigate`、
@@ -6338,4 +6343,5 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#6132]: https://github.com/bytedance/deer-flow/pull/6132
 [#6134]: https://github.com/bytedance/deer-flow/pull/6134
 [#6135]: https://github.com/bytedance/deer-flow/pull/6135
+[#6138]: https://github.com/bytedance/deer-flow/pull/6138
 [#6140]: https://github.com/bytedance/deer-flow/pull/6140
