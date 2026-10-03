@@ -13,6 +13,12 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Added
 
+- **scheduler:** Opt-in conversation tools create and manage owner-bound schedules,
+  support bounded automatic launches and per-occurrence goals, and let a scheduled
+  agent request stopping its own schedule. Unmet goals and automatic pause use
+  the existing notification outbox; explicit notes and authorized previous-run
+  references carry context forward without changing the goal lifecycle. ([#6229])
+
 #### Scheduler
 
 - **scheduler:** Scheduled tasks can be searched by title or prompt. Finding a
@@ -7669,6 +7675,7 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6171]: https://github.com/bytedance/deer-flow/pull/6171
 [#6201]: https://github.com/bytedance/deer-flow/pull/6201
 [#6202]: https://github.com/bytedance/deer-flow/pull/6202
-[#6214]: https://github.com/bytedance/deer-flow/pull/6214
 [#6212]: https://github.com/bytedance/deer-flow/pull/6212
+[#6214]: https://github.com/bytedance/deer-flow/pull/6214
+[#6229]: https://github.com/bytedance/deer-flow/pull/6229
 [#6230]: https://github.com/bytedance/deer-flow/pull/6230
