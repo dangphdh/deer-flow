@@ -2760,6 +2760,18 @@ This release closes that milestone with **301 merged pull requests**.
   stamped `skill_context_denied`, so durable context, skill allowed-tools,
   and autonomous secret bindings never activate the denied skill. ([#4541])
 
+- **lark:** The opt-in Lark broker subcommand denylist
+  (`DEERFLOW_LARK_BROKER_DENY_SUBCOMMANDS`) can no longer be bypassed by an
+  option value passed as its own token. Matching dropped only `-`-prefixed
+  tokens and compared the rest from the start, so the `work` in `--profile work
+  config show` became the leading positional and a `config show` rule never
+  matched — real `lark-cli` 1.0.65 still runs `config show` there. The broker
+  cannot know which options take a value, so a rule now matches when its tokens
+  appear in order among the non-flag tokens — which also catches values placed
+  between them (`config --profile work show`), a case a contiguous match would
+  still miss. Argument values that spell a denied path in order are refused too
+  (fail-closed). ([#6212])
+
 ### Documentation
 
 - **docs:** Fix the Apple Container verification instructions. The guide
@@ -7629,5 +7641,6 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6140]: https://github.com/bytedance/deer-flow/pull/6140
 [#6201]: https://github.com/bytedance/deer-flow/pull/6201
 [#6202]: https://github.com/bytedance/deer-flow/pull/6202
+[#6212]: https://github.com/bytedance/deer-flow/pull/6212
 
 [#6171]: https://github.com/bytedance/deer-flow/pull/6171
