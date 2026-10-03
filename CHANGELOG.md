@@ -460,6 +460,17 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Fixed
 
+- **community:** The shared SSRF guard now refuses every non-global address,
+  including the `100.64.0.0/10` shared address space that its flag checks let
+  through. That range holds CGNAT and Tailscale hosts and Alibaba Cloud's
+  `100.100.100.200` instance metadata endpoint, so `web_fetch` (crawl4ai,
+  Browserless, fastcrw), `web_capture`, the agentic browser, and personal MCP
+  connections could reach them, including through the IPv4-mapped
+  `::ffff:100.100.100.200` form a DNS answer can carry. The existing flag
+  checks stay, because some non-public forms such as the NAT64 spelling of a
+  metadata address still report as global. Operators who intentionally fetch
+  tailnet or CGNAT hosts with these tools must now set
+  `allow_private_addresses: true`. ([#6202])
 - **browser:** The agentic browser can no longer be steered to a private or
   cloud-metadata host by a DNS answer that changes after the SSRF check. The
   navigate screen and the per-request guard resolve a hostname to vet it, but
@@ -7598,4 +7609,5 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6138]: https://github.com/bytedance/deer-flow/pull/6138
 [#6140]: https://github.com/bytedance/deer-flow/pull/6140
 [#6201]: https://github.com/bytedance/deer-flow/pull/6201
+[#6202]: https://github.com/bytedance/deer-flow/pull/6202
 

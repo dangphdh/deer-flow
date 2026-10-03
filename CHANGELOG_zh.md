@@ -419,6 +419,13 @@
 
 ### 修复
 
+- **社区工具：** 共享 SSRF 校验现在拒绝所有非全局地址，包括原先的标志位检查放行的
+  `100.64.0.0/10` 共享地址段。该地址段包含 CGNAT 与 Tailscale 主机以及阿里云
+  `100.100.100.200` 实例元数据端点，因此 `web_fetch`（crawl4ai、Browserless、
+  fastcrw）、`web_capture`、智能浏览器和个人 MCP 连接此前都能访问它们，包括 DNS
+  应答可以携带的 IPv4 映射形式 `::ffff:100.100.100.200`。原有的标志位检查仍然保留，
+  因为部分非公网形式（例如元数据地址的 NAT64 写法）依然被判定为全局地址。有意通过这些
+  工具访问 tailnet 或 CGNAT 主机的运维人员现在需要设置 `allow_private_addresses: true`。([#6202])
 - **浏览器：** 智能浏览器不会再因为 SSRF 检查之后发生变化的 DNS 应答而被引向
   内网或云元数据主机。导航检查和逐请求守卫会解析主机名进行筛查，但 Chromium
   建立连接时会再次解析，因此重绑定 DNS 服务器可以对检查返回公网地址、对连接返回
@@ -6354,3 +6361,4 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#6138]: https://github.com/bytedance/deer-flow/pull/6138
 [#6140]: https://github.com/bytedance/deer-flow/pull/6140
 [#6201]: https://github.com/bytedance/deer-flow/pull/6201
+[#6202]: https://github.com/bytedance/deer-flow/pull/6202
