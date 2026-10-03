@@ -2360,6 +2360,13 @@
   （`config --profile work show`），而连续匹配仍会漏掉这种情况。参数值恰好按
   顺序拼出被拒绝路径的调用也会被拒绝（fail-closed）。([#6212])
 
+- **渠道：** Telegram 的 `allowed_users` 列表中若没有任何数字用户 ID，现在会拒绝
+  所有用户，而不是静默放行所有人。此前无法通过 `int()` 的条目会被直接丢弃且不
+  记录日志，而结果为空又被视为"未配置白名单"，因此 `["@alice", "bob"]` 会让机器
+  人对所有人开放。单个 ID 现在视为只有一项的列表，而不再被当作字符串逐位拆成多个
+  用户（`"123456"` 曾放行用户 1–6 并拦截 123456）；`null` 或单个整数也不再导致
+  渠道启动时崩溃；每个被丢弃的条目（`@用户名`、浮点数、布尔值）都会记录警告。([#6230])
+
 ### 文档
 
 - **文档：** 修正 Apple Container 的验证说明。
@@ -6401,3 +6408,4 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#6202]: https://github.com/bytedance/deer-flow/pull/6202
 [#6212]: https://github.com/bytedance/deer-flow/pull/6212
 [#6214]: https://github.com/bytedance/deer-flow/pull/6214
+[#6230]: https://github.com/bytedance/deer-flow/pull/6230
