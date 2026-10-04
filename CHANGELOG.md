@@ -466,6 +466,16 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Fixed
 
+- **runtime:** A multi-worker run that finished successfully is no longer
+  reclaimed as an orphan `error` while its worker is still finalizing. With an
+  event store, the worker records the terminal status in memory first and
+  writes it to the run store only after the journal flush, delivery receipt,
+  workspace scan and duration checkpoint. Lease renewal skipped runs whose
+  local status was already terminal, so a finalization longer than the lease
+  plus grace (about 30–40 seconds by default) let a peer, or the worker's own
+  reconciler, claim the still-active row. The heartbeat now keeps renewing
+  until that deferred write is attempted, and fences the run if a peer claims
+  it. Affects only `run_ownership.heartbeat_enabled` deployments. ([#6263])
 - **channels:** Buzz now follows a thread without a fresh mention for authors
   bound with `/connect`. With `channel_connections.enabled`, the manager maps a
   bound author's threads only in the connection repository, but Buzz's
@@ -7711,3 +7721,4 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6232]: https://github.com/bytedance/deer-flow/pull/6232
 [#6238]: https://github.com/bytedance/deer-flow/pull/6238
 [#6255]: https://github.com/bytedance/deer-flow/pull/6255
+[#6263]: https://github.com/bytedance/deer-flow/pull/6263
