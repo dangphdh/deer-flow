@@ -466,6 +466,15 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Fixed
 
+- **persistence:** A second Gateway instance no longer fails startup with
+  `TimeoutError` while another instance runs a PostgreSQL schema migration. The
+  bootstrap advisory lock was taken with a blocking `pg_advisory_lock` on the
+  app engine, whose asyncpg `database.command_timeout` (30s by default) also
+  applies to that statement, so any migration longer than the timeout aborted
+  the waiting instance. Acquisition now polls the non-blocking
+  `pg_try_advisory_lock`: the wait lasts as long as the holder's migration,
+  each attempt stays bounded by `command_timeout`, and the wait is logged once.
+  ([#6306])
 - **projects:** Reading a shelf document for the first time no longer blocks
   every other database write on SQLite while the document converts. Lazy
   conversion ran pymupdf/markitdown inside the `BEGIN IMMEDIATE` transaction
@@ -7746,3 +7755,4 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6263]: https://github.com/bytedance/deer-flow/pull/6263
 [#6282]: https://github.com/bytedance/deer-flow/pull/6282
 [#6305]: https://github.com/bytedance/deer-flow/pull/6305
+[#6306]: https://github.com/bytedance/deer-flow/pull/6306
