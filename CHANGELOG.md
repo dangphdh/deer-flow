@@ -479,6 +479,15 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Fixed
 
+- **gateway:** The knowledge retrieval catalog no longer blocks the Gateway event
+  loop while it loads a custom agent's config. Both
+  `GET /api/knowledge/retrieval-catalog/datasets` and
+  `.../datasets/{id}/documents` read the agent through the sync agent store on
+  the loop, which means file IO on the `file` backend and a synchronous
+  SQLAlchemy round trip on the `db` backend, so a slow disk or database stalled
+  every other request. The load now runs in `asyncio.to_thread`, like the other
+  Gateway routes that read agent configs; responses and the 404 for an unknown
+  agent are unchanged. ([#6313])
 - **gateway:** Deleting a thread with a large workspace no longer freezes every
   other Gateway request while its files are removed. `DELETE /api/threads/{id}`
   ran `shutil.rmtree` over the thread directory on the event loop, so other
@@ -7787,5 +7796,6 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6305]: https://github.com/bytedance/deer-flow/pull/6305
 [#6306]: https://github.com/bytedance/deer-flow/pull/6306
 [#6307]: https://github.com/bytedance/deer-flow/pull/6307
+[#6313]: https://github.com/bytedance/deer-flow/pull/6313
 [#6319]: https://github.com/bytedance/deer-flow/pull/6319
 [#6326]: https://github.com/bytedance/deer-flow/pull/6326
