@@ -623,6 +623,12 @@ This release closes that milestone with **439 merged pull requests**.
 
 ### Fixed
 
+- **deploy:** `make up`, `make down` and `make prod-logs` no longer stop on a
+  fresh checkout with `env file .../.env not found`. `.env` and `frontend/.env` are gitignored and
+  `make up` does not create them, but the production compose file required
+  both. Its `env_file` entries are now optional, as in the development compose
+  file: Compose loads them when present and skips them otherwise. This needs
+  Docker Compose 2.24 or newer, the floor the README already documents. ([#6370])
 - **memory:** DeerMem relevance ranking no longer counts punctuation as query
   terms when jieba is installed (`memory-zh` extra). `tokenize()` dropped only
   whitespace from `jieba.cut`, which emits `，`, `。`, `,` and `!` as standalone
@@ -8869,4 +8875,5 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6351]: https://github.com/bytedance/deer-flow/pull/6351
 [#6354]: https://github.com/bytedance/deer-flow/pull/6354
 [#6365]: https://github.com/bytedance/deer-flow/pull/6365
+[#6370]: https://github.com/bytedance/deer-flow/pull/6370
 [#6388]: https://github.com/bytedance/deer-flow/pull/6388
