@@ -494,6 +494,13 @@ This release closes that milestone with **301 merged pull requests**.
 
 ### Fixed
 
+- **sandbox:** With host bash enabled, the local sandbox no longer keeps a
+  thread on the skill view of the last restricted Agent that ran there. That
+  view is only maintained while host bash is off, but `LocalSandboxProvider`
+  mounted it whenever it existed, so later unrestricted runs on the thread kept
+  the old allowlist and could not read other enabled or newly added skills
+  under `/mnt/skills`. Those runs now use the shared skill views; the thread
+  view is kept and enforced again once host bash is turned off. ([#6344])
 - **sandbox:** The local sandbox no longer rewrites line endings. `read_file`
   translated CRLF to LF, so `str_replace` on a CRLF file wrote every line back as
   LF, and the read-before-write gate could not see a change that only touched
@@ -7839,3 +7846,4 @@ with **180 merged pull requests** since the first 2.0 milestone tag.
 [#6328]: https://github.com/bytedance/deer-flow/pull/6328
 [#6332]: https://github.com/bytedance/deer-flow/pull/6332
 [#6343]: https://github.com/bytedance/deer-flow/pull/6343
+[#6344]: https://github.com/bytedance/deer-flow/pull/6344

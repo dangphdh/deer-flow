@@ -432,6 +432,10 @@
 
 ### 修复
 
+- **沙箱：** 启用 host bash 时，本地沙箱不再把线程固定在上一个受限 Agent 的技能视图上。
+  该视图只在 host bash 关闭时维护，但 `LocalSandboxProvider` 只要它存在就会挂载，导致该线程之后
+  不受限的运行仍沿用旧的 allowlist，读不到 `/mnt/skills` 下其他已启用或新增的技能。现在这些运行
+  使用共享技能视图；线程视图会保留，并在关闭 host bash 后重新生效。([#6344])
 - **沙箱：** 本地沙箱不再改写换行符。`read_file` 此前把 CRLF 转成 LF，导致
   `str_replace` 编辑 CRLF 文件后整份文件都变成 LF，且读后写校验无法察觉仅改动换行符的
   变更；在 Windows 上 `write_file` 会把 LF 内容写成 CRLF，使 `bash run.sh` 等脚本失败。
@@ -6517,3 +6521,4 @@ DeerFlow 2.0 是围绕"超级智能体"框架的彻底重写，核心包含子�
 [#6326]: https://github.com/bytedance/deer-flow/pull/6326
 [#6332]: https://github.com/bytedance/deer-flow/pull/6332
 [#6343]: https://github.com/bytedance/deer-flow/pull/6343
+[#6344]: https://github.com/bytedance/deer-flow/pull/6344
