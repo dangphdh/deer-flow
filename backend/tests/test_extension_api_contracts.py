@@ -21,10 +21,18 @@ from deerflow_extension_api import (
     ExtensionData,
     ExtensionInstall,
     ExtensionRegistry,
+    ExtensionRuntimeDeps,
+    ExtensionService,
     HostPolicySnapshot,
+    InvalidRunEvidenceCursor,
     MiddlewareContributor,
     MiddlewarePlacement,
     Placement,
+    RunEventPage,
+    RunEventView,
+    RunEvidenceReader,
+    RunPage,
+    RunStatusView,
     SystemModelCallObserver,
     SystemModelRequest,
     SystemModelResult,
@@ -63,11 +71,16 @@ def test_middleware_placement_defaults():
     "cls",
     [
         HostPolicySnapshot,
+        ExtensionRuntimeDeps,
         AgentBuildContext,
         TaskInfo,
         SystemModelRequest,
         SystemModelResult,
         MiddlewarePlacement,
+        RunEventPage,
+        RunEventView,
+        RunPage,
+        RunStatusView,
     ],
 )
 def test_every_dataclass_is_frozen(cls):
@@ -77,7 +90,7 @@ def test_every_dataclass_is_frozen(cls):
 
 @pytest.mark.parametrize(
     "cls",
-    [HostPolicySnapshot, TaskInfo, SystemModelRequest, SystemModelResult],
+    [HostPolicySnapshot, ExtensionRuntimeDeps, TaskInfo, SystemModelRequest, SystemModelResult],
 )
 def test_additive_dataclasses_are_constructible_with_required_fields_only(cls):
     """Fields added later must carry defaults, or old extensions break on upgrade.
@@ -114,7 +127,9 @@ def test_agent_build_context_optional_fields_keep_their_defaults():
     "protocol",
     [
         ExtensionRegistry,
+        ExtensionService,
         MiddlewareContributor,
+        RunEvidenceReader,
         TaskLifecycleContributor,
         SystemModelCallObserver,
     ],
@@ -131,7 +146,10 @@ def test_every_protocol_method_has_a_default_implementation(protocol):
             continue
         checked += 1
         body = inspect.getsource(member).split("\n", 1)[1]
-        assert "return" in body, f"{protocol.__name__}.{name} has no default implementation. Adding a contract method is only additive when it returns a default; otherwise every already-released extension breaks on upgrade."
+        if protocol is RunEvidenceReader:
+            assert "raise NotImplementedError" in body
+        else:
+            assert "return" in body, f"{protocol.__name__}.{name} has no default implementation. Adding a contract method is only additive when it returns a default; otherwise every already-released extension breaks on upgrade."
     assert checked > 0, f"{protocol.__name__} declared no methods to check"
 
 
@@ -195,16 +213,42 @@ def test_system_model_request_normalizes_messages_into_an_immutable_sequence():
     assert SystemModelRequest(messages=("already", "a", "tuple")).messages == ("already", "a", "tuple")
 
 
-def test_future_contribution_points_are_not_advertised_before_the_host_supports_them():
-    """A merged slice must not silently accept registrations it cannot run."""
+def test_gateway_contribution_points_are_part_of_the_public_surface():
     import deerflow_extension_api
 
     for name in (
         "ExtensionRuntimeDeps",
         "ExtensionService",
+        "InvalidRunEvidenceCursor",
+        "RunEvidenceReader",
+        "RunEventPage",
+        "RunPage",
     ):
-        assert name not in deerflow_extension_api.__all__
-        assert not hasattr(deerflow_extension_api, name)
+        assert name in deerflow_extension_api.__all__
+        assert hasattr(deerflow_extension_api, name)
+    assert callable(ExtensionRegistry.service)
+    assert callable(ExtensionRegistry.routers)
+    assert not hasattr(deerflow_extension_api, "RouterContributor")
+
+
+def test_run_evidence_pages_are_immutable_and_empty_by_default():
+    assert issubclass(InvalidRunEvidenceCursor, ValueError)
+    assert RunPage().items == ()
+    assert RunPage().next_cursor is None
+    assert RunPage().has_more is False
+    assert RunEventPage().items == ()
+    assert RunEventPage().next_after_seq is None
+
+
+def test_bare_run_evidence_reader_fails_explicitly_instead_of_looking_caught_up():
+    class _Bare:
+        pass
+
+    async def invoke():
+        with pytest.raises(NotImplementedError):
+            await RunEvidenceReader.list_changed_runs(_Bare(), cursor=None, limit=10)
+
+    asyncio.run(invoke())
 
 
 def test_task_store_from_runtime_reads_the_host_key():
@@ -263,6 +307,15 @@ def test_distribution_marks_the_contract_package_as_typed():
     assert marker.is_file()
 
 
+def test_contract_package_keeps_runtime_dependencies_empty():
+    import tomllib
+    from pathlib import Path
+
+    pyproject = Path(__file__).parent.parent / "packages" / "extension-api" / "pyproject.toml"
+
+    assert tomllib.loads(pyproject.read_text())["project"]["dependencies"] == []
+
+
 def test_harness_pins_the_contract_package_exactly():
     """The version contract (extension-system design): the host pins the
     contract package exactly, extensions use ranges. A range here would let an
@@ -289,5 +342,18 @@ def test_runtime_api_version_matches_the_installed_contract_package():
     """Every additive contract slice bumps both gates together."""
     from importlib.metadata import version
 
-    assert API_VERSION == "0.1.1"
+    assert API_VERSION == "0.2.5"
     assert API_VERSION == version("deerflow-extension-api")
+
+
+def test_extension_service_contract_is_public_and_defaults_to_noop():
+    class _Bare:
+        pass
+
+    deps = ExtensionRuntimeDeps()
+
+    assert deps.app_store is None
+    assert deps.session_factory is None
+    assert deps.run_evidence_reader is None
+    assert asyncio.run(ExtensionService.start(_Bare(), deps)) is None
+    assert asyncio.run(ExtensionService.stop(_Bare())) is None

@@ -121,7 +121,8 @@ FastAPI 应用程序，为前端集成提供 REST 接口：
 | `GET /api/models` | 列出可用的 LLM 模型 |
 | `GET/PUT /api/mcp/config` | 管理 MCP 服务器配置 |
 | `POST /api/mcp/cache/reset` | 重置缓存的 MCP 工具，使其在下次使用时重新加载 |
-| `GET/PUT /api/skills` | 列出并管理技能 |
+| `GET /api/skills` | 列出当前调用者可见的技能 |
+| `PUT /api/skills/{skill_name}` | 启用或禁用指定技能（仅管理员） |
 | `POST /api/skills/install` | 从 `.skill` 归档文件安装技能 |
 | `GET /api/memory` | 获取记忆数据 |
 | `POST /api/memory/reload` | 强制重新加载记忆 |
@@ -441,8 +442,11 @@ make migrate-rev MSG="add foo column to runs"
 ### 测试
 
 ```bash
-# 离线后端测试套件（排除调用外部真实 API 的测试）
+# 默认离线后端测试套件（排除调用外部真实 API 和阻塞式 I/O 的测试）
 make test
+
+# 严格的阻塞式 I/O 测试套件
+make test-blocking-io
 
 # 显式运行使用真实 API 的 DeerFlowClient 集成测试套件
 make test-live

@@ -134,6 +134,11 @@ def _format_invocation_error(agent: str, cmd: str, exc: Exception) -> str:
     if cmd == "codex-acp" and shutil.which("codex"):
         return f"{message} The installed `codex` CLI does not speak ACP directly. Install a Codex ACP adapter (for example `npx @zed-industries/codex-acp`) or update `acp_agents.codex.command` and `args` in config.yaml."
 
+    if agent == "mcode":
+        return (
+            f"{message} Install it with `npm install --global @minimax-ai/code`, run `mcode login`, and restart DeerFlow so it inherits the updated PATH. "
+            "If the Gateway runs in Docker, ensure `mcode` is installed and authenticated inside the Gateway container/image."
+        )
     return f"{message} Install the agent binary or update `acp_agents.{agent}.command` in config.yaml."
 
 
@@ -193,7 +198,7 @@ def build_invoke_acp_agent_tool(agents: dict) -> BaseTool:
                 try:
                     from acp.schema import TextContentBlock
 
-                    if hasattr(update, "content") and isinstance(update.content, TextContentBlock):
+                    if getattr(update, "session_update", None) == "agent_message_chunk" and isinstance(update.content, TextContentBlock):
                         self._chunks.append(update.content.text)
                 except Exception:
                     pass
@@ -210,9 +215,9 @@ def build_invoke_acp_agent_tool(agents: dict) -> BaseTool:
         client = _CollectingClient()
         cmd = agent_config.command
         args = agent_config.args or []
-        physical_cwd = _get_work_dir(thread_id)
+        physical_cwd = await asyncio.to_thread(_get_work_dir, thread_id)
         try:
-            mcp_servers = _build_acp_mcp_servers()
+            mcp_servers = await asyncio.to_thread(_build_acp_mcp_servers)
         except ValueError as exc:
             logger.warning(
                 "Invalid MCP server configuration for ACP agent '%s'; continuing without MCP servers: %s",
@@ -229,32 +234,32 @@ def build_invoke_acp_agent_tool(agents: dict) -> BaseTool:
 
             async with spawn_agent_process(client, cmd, *args, env=agent_env, cwd=physical_cwd) as (conn, proc):
                 logger.info("Spawning ACP agent '%s' with command '%s' and args %s in cwd %s", agent, cmd, args, physical_cwd)
-                await conn.initialize(
-                    protocol_version=PROTOCOL_VERSION,
-                    client_capabilities=ClientCapabilities(),
-                    client_info=Implementation(name="deerflow", title="DeerFlow", version="0.1.0"),
-                )
-                session_kwargs: dict[str, Any] = {"cwd": physical_cwd, "mcp_servers": mcp_servers}
-                if agent_config.model:
-                    session_kwargs["model"] = agent_config.model
-                session = await conn.new_session(**session_kwargs)
                 try:
-                    await asyncio.wait_for(
-                        conn.prompt(
+                    async with asyncio.timeout(agent_config.timeout_seconds) as deadline:
+                        await conn.initialize(
+                            protocol_version=PROTOCOL_VERSION,
+                            client_capabilities=ClientCapabilities(),
+                            client_info=Implementation(name="deerflow", title="DeerFlow", version="0.1.0"),
+                        )
+                        session_kwargs: dict[str, Any] = {"cwd": physical_cwd, "mcp_servers": mcp_servers}
+                        if agent_config.model:
+                            session_kwargs["model"] = agent_config.model
+                        session = await conn.new_session(**session_kwargs)
+                        await conn.prompt(
                             session_id=session.session_id,
                             prompt=[text_block(prompt)],
-                        ),
-                        timeout=agent_config.timeout_seconds,
-                    )
+                        )
                 except TimeoutError:
+                    if not deadline.expired():
+                        raise
                     logger.error(
-                        "ACP agent '%s' timed out after %s seconds without responding to prompt; terminating subprocess",
+                        "ACP agent '%s' timed out after %s seconds during initialization, session creation, or prompt; terminating subprocess",
                         agent,
                         agent_config.timeout_seconds,
                     )
                     return (
                         f"Error: ACP agent '{agent}' timed out after {agent_config.timeout_seconds} seconds "
-                        "without responding. The agent subprocess has been terminated. If this agent handles "
+                        "without completing the ACP invocation. The agent subprocess has been terminated. If this agent handles "
                         f"long-running tasks, increase acp_agents.{agent}.timeout_seconds in config.yaml."
                     )
             result = client.collected_text
@@ -263,7 +268,7 @@ def build_invoke_acp_agent_tool(agents: dict) -> BaseTool:
             return result or "(no response)"
         except Exception as e:
             logger.error("ACP agent '%s' invocation failed: %s", agent, e)
-            return _format_invocation_error(agent, cmd, e)
+            return await asyncio.to_thread(_format_invocation_error, agent, cmd, e)
 
     return StructuredTool.from_function(
         name="invoke_acp_agent",

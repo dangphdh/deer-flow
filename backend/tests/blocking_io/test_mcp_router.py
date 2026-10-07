@@ -1,9 +1,9 @@
-"""Regression anchor: updating MCP config must not block the event loop.
+"""Regression anchor: reading or updating MCP config must not block the event loop.
 
-The PUT and PATCH handlers resolve the extensions config path, probe its
-existence, read raw JSON, atomically write it, and reload it — all blocking
-filesystem IO. They offload the whole read-modify-write via
-``asyncio.to_thread``; if either regresses back onto the event loop, the strict
+The GET handler resolves the extensions config path and reads raw JSON. PUT
+and PATCH also atomically write and reload it. All of that is blocking
+filesystem IO, so the handlers offload the read or whole read-modify-write via
+``asyncio.to_thread``. If one regresses back onto the event loop, the strict
 Blockbuster gate raises ``BlockingError`` and this test fails.
 
 The admin check is patched to a no-op so the anchor exercises the handler's own
@@ -26,11 +26,33 @@ from app.gateway.routers.mcp import (
     McpConfigUpdateRequest,
     McpServerConfigResponse,
     McpServerStateUpdateRequest,
+    get_mcp_configuration,
     update_mcp_configuration,
     update_mcp_server_state,
 )
 
 pytestmark = pytest.mark.asyncio
+
+
+async def test_get_mcp_configuration_does_not_block_or_expand_placeholders(tmp_path: Path, monkeypatch) -> None:
+    config_path = tmp_path / "extensions_config.json"
+    placeholder = "$CODEX_PR_5022_BLOCKING_TOKEN"
+    await asyncio.to_thread(
+        config_path.write_text,
+        '{"mcpServers":{"stdio":{"type":"stdio","command":"npx","args":["--token","' + placeholder + '"]}},"skills":{}}',
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DEER_FLOW_EXTENSIONS_CONFIG_PATH", str(config_path))
+    monkeypatch.setenv("CODEX_PR_5022_BLOCKING_TOKEN", "must-not-reach-the-editor")
+
+    async def _noop_admin(_request, **_kwargs) -> None:
+        return None
+
+    monkeypatch.setattr(mcp_router, "require_admin_user", _noop_admin)
+
+    response = await get_mcp_configuration(request=None)
+
+    assert response.mcp_servers["stdio"].args == ["--token", placeholder]
 
 
 async def test_update_mcp_configuration_does_not_block_event_loop(tmp_path: Path, monkeypatch) -> None:
@@ -140,3 +162,57 @@ async def test_concurrent_mcp_put_and_patch_updates_are_serialized(tmp_path: Pat
     )
 
     assert counters["max"] == 1, f"config updates were not serialized (max concurrency {counters['max']})"
+
+
+async def test_update_mcp_configuration_drains_write_across_cancellation(tmp_path: Path, monkeypatch) -> None:
+    """A cancelled PUT still settles the config write and the tools-cache reset."""
+    config_path = tmp_path / "extensions_config.json"
+    await asyncio.to_thread(config_path.write_text, '{"mcpServers": {}, "skills": {}}', encoding="utf-8")
+    monkeypatch.setenv("DEER_FLOW_EXTENSIONS_CONFIG_PATH", str(config_path))
+
+    async def _noop_admin(_request, **_kwargs) -> None:
+        return None
+
+    monkeypatch.setattr(mcp_router, "require_admin_user", _noop_admin)
+
+    started = threading.Event()
+    release = threading.Event()
+    original_apply = mcp_router._apply_mcp_config_update
+
+    def _blocked_apply(body):
+        started.set()
+        assert release.wait(timeout=5)
+        return original_apply(body)
+
+    monkeypatch.setattr(mcp_router, "_apply_mcp_config_update", _blocked_apply)
+
+    cache_resets: list[int] = []
+    monkeypatch.setattr(mcp_router, "reset_mcp_tools_cache", lambda: cache_resets.append(1))
+
+    body = McpConfigUpdateRequest(
+        mcp_servers={"test-server": McpServerConfigResponse(type="http", url="https://example.test/mcp", description="anchor")},
+    )
+
+    task = asyncio.create_task(update_mcp_configuration(request=None, body=body))
+    try:
+        assert await asyncio.to_thread(started.wait, 5)
+        task.cancel()
+        await asyncio.sleep(0.05)
+        task.cancel()
+        await asyncio.sleep(0.05)
+        assert not task.done()
+
+        release.set()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    finally:
+        release.set()
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    # The cancelled caller drained the write: the merged config landed and the
+    # tools-cache reset published behind it.
+    written = await asyncio.to_thread(config_path.read_text, encoding="utf-8")
+    assert "test-server" in written
+    assert cache_resets == [1]

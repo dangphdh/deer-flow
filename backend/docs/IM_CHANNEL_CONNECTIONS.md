@@ -1,6 +1,6 @@
 # IM Channel Connections
 
-DeerFlow supports user-owned IM channel bindings for Telegram, Slack, Discord, Feishu/Lark, DingTalk, WeChat, WeCom, and Buzz. The feature reuses the existing `channels.*` runtime configuration, so it works in local and private deployments with the same outbound transports already supported by DeerFlow.
+DeerFlow supports user-owned IM channel bindings for Telegram, Slack, Discord, Feishu/Lark, DingTalk, WeChat, WeCom, QQ, and Buzz. The feature reuses the existing `channels.*` runtime configuration, so it works in local and private deployments with the same outbound transports already supported by DeerFlow.
 
 No public IP, OAuth callback URL, or provider webhook is required in this implementation.
 
@@ -15,6 +15,13 @@ A user-owned IM channel connection is a **per-DeerFlow-user bind layer** layered
 1. **Owner identity** — each `(provider, external account, workspace)` maps to exactly one DeerFlow account (`owner_user_id`). Every run created from that connection runs in the owner's bucket (memory, uploads, outputs, custom agent).
 2. **One-time bind codes** — the browser Connect flow mints a short-lived `secrets.token_urlsafe(16)` code (600 s TTL, single-use) and surfaces it only in the initiating user's browser. The platform worker consumes `/connect <code>` (Telegram uses `/start <code>` over a deep link) before applying any `allowed_users` filter, so a not-yet-allowlisted user can complete their first bind.
 3. **Strict ownership transfer** — the latest successful bind wins; `upsert_connection` revokes other owners' active rows for the same external identity. The DB-enforced partial unique index `uq_channel_connection_active_identity` (`WHERE status != 'revoked'`) makes the invariant race-free across concurrent writers.
+
+### Conversation-scoped Custom Agents
+
+Connected users can run `/agent list` to inspect the Custom Agents in their own DeerFlow user bucket, then `/agent use <name>` to start a new conversation with one.
+The selection is written to the new Gateway thread's channel metadata and, for a Custom Agent, to the canonical `agent_name` routing metadata used by the Web UI. It is cached by `ChannelManager` for subsequent turns; on restart, the manager reads the channel metadata before the first resumed turn. Opening that thread from Web search therefore continues under the same Custom Agent instead of falling back to the default runtime.
+Because selecting an agent always creates a new thread instead of mutating the current one, an existing conversation keeps its original runtime, prompt, skills, and checkpoint lineage.
+`/agent use lead_agent` starts a new conversation with the default agent.
 
 Connect codes are deliberately **bind-time defenses**, not chat-time defenses. After binding, ordinary `allowed_users` continue to gate regular messages exactly as before.
 
@@ -97,14 +104,14 @@ sequenceDiagram
     autonumber
     participant Platform as Provider<br/>(Slack/Telegram/...)
     participant Worker as Provider worker
-    participant Bus as MessageBus<br/>InboundMessage queue
-    participant Mgr as ChannelManager
+    participant Bus as MessageBus<br/>bounded admission + queue
+    participant Mgr as ChannelManager<br/>fixed worker pool
     participant Client as langgraph_sdk<br/>async client
     participant Gateway as Gateway<br/>/api/* routers
 
     Platform->>Worker: inbound chat message<br/>(resolved to connection_id + owner_user_id)
-    Worker->>Bus: publish_inbound(InboundMessage)
-    Bus->>Mgr: msg = get_inbound()
+    Worker->>Bus: reserve by Gateway handoff, then commit InboundMessage
+    Bus->>Mgr: fixed worker gets msg and awaits handler inline
     Mgr->>Mgr: _channel_storage_user_id(msg)<br/>→ owner-bound user_id
     Mgr->>Mgr: _get_bound_identity_rejection()<br/>(re-check identity by provider+ext+ws)
     Mgr->>Client: _get_or_create_thread(thread_id or new)
@@ -128,6 +135,18 @@ sequenceDiagram
     Bus->>Worker: outbound callback
     Worker->>Platform: post reply (Telegram editMessageText,<br/>Feishu patch card, etc.)
 ```
+
+### Inbound capacity and overload behavior
+
+Three top-level `channels` settings control the MessageBus/manager lifecycle: `inbound_queue_maxsize` (default `1000`) covers queued messages plus provider-side reservations that may still be doing final identity/ack preparation, `max_concurrency` (default `5`) is the exact number of long-lived `ChannelManager` workers, and `shutdown_grace_period_seconds` (default `3`) bounds graceful draining before active handlers are cancelled. Active handlers run inline in those workers, so a burst cannot create a task per message. The maximum manager-owned live intake is therefore the pending capacity plus the fixed worker count.
+
+Admission never waits for queue space, because waiting producer coroutines would simply move the unbounded backlog outside the queue. At capacity:
+
+- Slack, Discord, Feishu/Lark, DingTalk, Telegram, WeChat, and WeCom drop the new message before DeerFlow sends its working acknowledgment. `MessageBus` emits a rate-limited warning with a cumulative rejection count.
+- Buzz leaves the per-channel replay watermark unchanged and reconnects, allowing relay history to replay the event.
+- GitHub webhook fan-out returns `503`. GitHub records the delivery as failed; an operator or recovery job can retry it through the Recent Deliveries UI or REST redelivery API (GitHub does not retry failed deliveries automatically).
+
+Shutdown first closes admission and cancels follow-up watchers, but keeps provider transports alive while workers drain accepted messages for up to `shutdown_grace_period_seconds`. Once that grace expires, it cancels active handlers, discards queue entries that never began, and awaits every manager-owned worker and watcher. Provider coroutines submitted from SDK threads are likewise retained, cancelled, and awaited before their channel tears down SDK resources. A successful stop therefore leaves no owned handler able to use a closed transport. The Gateway's outer shutdown timeout remains the process-level bound; if it cancels cleanup, the service retains its transports and singleton instead of reporting a successful stop or hiding unfinished ownership.
 
 ## Sync vs Streaming Channels
 
@@ -218,6 +237,11 @@ the resulting virtual path (or a failure notice). Historical uploads are not
 automatically injected on later turns; the agent discovers them with
 `list_uploaded_files`.
 
+Feishu/Lark inbound resource streams are read with a 20,000,000-byte cap before
+they are persisted or synced into a non-local sandbox. Oversized resources and
+per-file path failures are surfaced as a failure placeholder in the message text
+without aborting later attachments in the same inbound message.
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -262,6 +286,10 @@ Configure the actual IM bots under the existing `channels` block:
 
 ```yaml
 channels:
+  inbound_queue_maxsize: 1000
+  max_concurrency: 5
+  shutdown_grace_period_seconds: 3
+
   telegram:
     enabled: true
     bot_token: $TELEGRAM_BOT_TOKEN
@@ -419,6 +447,86 @@ Neither can make anything be *acted on*. The `allowed_users` allowlist and per-e
 **Deny-by-default allowlist:** unlike other providers (where an empty `allowed_users` means "allow everyone"), `channels.buzz.allowed_users` is deliberately deny-by-default — an empty list means *nobody* can trigger a run, and DeerFlow logs a startup warning saying so. Add each member pubkey (hex or `npub1…`) that should be able to reach the agent. Individual drops are logged at DEBUG level.
 
 **Bound identity:** once a pubkey completes `/connect`, its inbound messages resolve to that connection and run under the bound DeerFlow user (memory, files, and artifacts land in that user's buckets). Bindings are scoped to the relay host, so the same pubkey on a different relay is a different identity and must bind separately.
+
+### QQ WebSocket setup (MVP)
+
+QQ uses an outbound WebSocket connection for events and the QQ Open Platform
+HTTPS API for replies. No public server, webhook route, callback URL, or tunnel
+is required. This transport requires a bot whose developer console offers
+WebSocket access; availability should be checked for your bot.
+
+1. Create a bot in the QQ Open Platform console and select **WebSocket** under
+   development settings. Enable the private-message and group @mention
+   capabilities you intend to use. Configure permitted test accounts/groups in
+   the console when the bot is in testing; publishing and platform approval
+   requirements are separate from DeerFlow configuration.
+2. Supply `QQ_APP_ID` and `QQ_CLIENT_SECRET` to the Gateway process, or save the
+   App ID and Client secret through the administrator's Channels UI. Do not
+   commit credentials. A frontend `.env.local` file is not a substitute for
+   supplying the Gateway's environment.
+3. Configure the transport and, for authenticated users, the binding UI:
+
+```yaml
+channels:
+  qq:
+    enabled: true
+    app_id: $QQ_APP_ID
+    client_secret: $QQ_CLIENT_SECRET
+    allowed_users: []
+    sandbox: false
+
+channel_connections:
+  enabled: true
+  require_bound_identity: true
+  qq:
+    enabled: true
+```
+
+4. Restart the Gateway after editing YAML. In **Settings > Channels > QQ**, get
+   a one-time binding code and send `/connect <code>` to the bot. For a group
+   binding, @mention the bot before the command in that group. Then send a
+   private text message, or @mention the bot with text in the bound group.
+
+`allowed_users` contains QQ OpenIDs, not numeric QQ account numbers. An empty
+list admits ordinary messages from all senders, subject to the shared bound
+identity policy. As with other channels, a valid binding code is consumed
+before this allowlist. Treat the code as confidential; only bind in trusted
+groups. Private identities are scoped to the bot App ID; group identities are
+scoped to both the App ID and group OpenID. Do not assume private and group
+OpenIDs represent the same identity. Bind each context separately. Group
+conversation histories are isolated by sender, but replies remain visible to
+everyone in the group.
+
+The MVP supports text-only `C2C_MESSAGE_CREATE` and `GROUP_AT_MESSAGE_CREATE`
+events and final text replies. It does not download/upload attachments, stream
+partial answers, handle guild/channel messages, or proactively push scheduled
+results. Replies require the original message ID: C2C replies have a 60-minute
+window with at most four replies per source message; group replies have a
+5-minute window with at most five replies. Long answers are split at UTF-8 character boundaries with a
+conservative 4,000-byte adapter budget per message; overflow is marked as
+truncated in the last permitted reply. Unknown or timezone-naive message
+timestamps use the full advisory window and emit a rate-limited warning without
+message content; QQ still enforces reply expiry server-side.
+Runs that finish after the platform's reply window remain available
+in DeerFlow but cannot be delivered through that source message. QQ may reject
+links that are not approved in the bot's URL allowlist.
+
+Use one active Gateway channel worker per bot for this MVP. Token refresh,
+heartbeat monitoring, reconnect backoff, and session Resume are automatic.
+Invalid sessions/sequence numbers trigger a fresh Identify. Bindings persist;
+session state, duplicate suppression and passive-reply contexts are bounded
+in-memory state and do not survive a process restart. The `sandbox` option
+changes only the REST API host; test-account/group membership is controlled
+separately in the QQ console.
+
+For an opt-in transport check, supply the two QQ credential environment
+variables, set `DEER_FLOW_RUN_LIVE_TESTS=1`, and run
+`uv run pytest -m live tests/test_qq_channel_live.py` from `backend/`.
+It checks READY, two heartbeat acknowledgements and shutdown; it does not send
+chat messages or establish end-to-end agent or group-message compatibility.
+
+Protocol references: [QQ event subscriptions](https://bot.q.qq.com/wiki/develop/api-v2/dev-prepare/interface-framework/event-emit.html)
+and [message sending rules](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/send-receive/send.html).
 
 Codes use 128 bits of randomness, expire after 10 minutes, and are single-use.
 
